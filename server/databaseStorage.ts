@@ -22,7 +22,7 @@ import {
   type InsertMarketSentiment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -162,7 +162,12 @@ export class DatabaseStorage implements IStorage {
   async removeFromWatchlist(userId: number, stockId: number): Promise<boolean> {
     const result = await db
       .delete(watchlistTable)
-      .where(eq(watchlistTable.userId, userId) && eq(watchlistTable.stockId, stockId));
+      .where(
+        and(
+          eq(watchlistTable.userId, userId),
+          eq(watchlistTable.stockId, stockId)
+        )
+      );
     return result.rowCount > 0;
   }
 
