@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(210, 24%, 11%);
+  --foreground: hsl(0, 0%, 100%);
+  --muted: hsl(210, 24%, 16%);
+  --muted-foreground: hsl(215, 13%, 65%);
+  --popover: hsl(210, 24%, 16%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --card: hsl(210, 24%, 16%);
+  --card-foreground: hsl(0, 0%, 100%);
+  --border: hsl(215, 13%, 65%);
+  --input: hsl(210, 24%, 16%);
+  --primary: hsl(166, 100%, 42%);
+  --primary-foreground: hsl(210, 24%, 11%);
+  --secondary: hsl(210, 24%, 16%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(228, 94%, 67%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(348, 86%, 61%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(166, 100%, 42%);
+  --radius: 0.5rem;
+  --chart-1: hsl(166, 100%, 42%);
+  --chart-2: hsl(348, 86%, 61%);
+  --chart-3: hsl(228, 94%, 67%);
+  --chart-4: hsl(43, 100%, 51%);
+  --chart-5: hsl(283, 100%, 64%);
+  --trading-green: hsl(166, 100%, 42%);
+  --trading-red: hsl(348, 86%, 61%);
+  --trading-blue: hsl(228, 94%, 67%);
+  --trading-warning: hsl(43, 100%, 51%);
+  --trading-neutral: hsl(215, 13%, 65%);
+  --trading-surface: hsl(213, 28%, 20%);
+}
+
+.dark {
+  --background: hsl(210, 24%, 11%);
+  --foreground: hsl(0, 0%, 100%);
+  --muted: hsl(210, 24%, 16%);
+  --muted-foreground: hsl(215, 13%, 65%);
+  --popover: hsl(210, 24%, 16%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --card: hsl(210, 24%, 16%);
+  --card-foreground: hsl(0, 0%, 100%);
+  --border: hsl(215, 13%, 65%);
+  --input: hsl(210, 24%, 16%);
+  --primary: hsl(166, 100%, 42%);
+  --primary-foreground: hsl(210, 24%, 11%);
+  --secondary: hsl(210, 24%, 16%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(228, 94%, 67%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(348, 86%, 61%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(166, 100%, 42%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  .font-mono {
+    font-family: 'Roboto Mono', Monaco, 'Cascadia Code', 'Segoe UI Mono', 'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', monospace;
+  }
+}
+
+@layer components {
+  .trading-card {
+    @apply bg-card border border-border rounded-xl p-6 transition-all duration-200;
+  }
+  
+  .trading-card:hover {
+    @apply border-primary;
+  }
+  
+  .trading-signal-buy {
+    @apply bg-secondary border-trading-green text-trading-green;
+  }
+  
+  .trading-signal-sell {
+    @apply bg-secondary border-trading-red text-trading-red;
+  }
+  
+  .trading-signal-hold {
+    @apply bg-secondary border-trading-warning text-trading-warning;
+  }
+  
+  .trading-signal-watch {
+    @apply bg-secondary border-trading-blue text-trading-blue;
+  }
+  
+  .stock-price-positive {
+    @apply text-trading-green;
+  }
+  
+  .stock-price-negative {
+    @apply text-trading-red;
+  }
+  
+  .ai-confidence-bar {
+    @apply w-full bg-muted rounded-full h-2;
+  }
+  
+  .ai-confidence-fill {
+    @apply bg-primary h-2 rounded-full transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .text-trading-green {
+    color: var(--trading-green);
+  }
+  
+  .text-trading-red {
+    color: var(--trading-red);
+  }
+  
+  .text-trading-blue {
+    color: var(--trading-blue);
+  }
+  
+  .text-trading-warning {
+    color: var(--trading-warning);
+  }
+  
+  .text-trading-neutral {
+    color: var(--trading-neutral);
+  }
+  
+  .bg-trading-surface {
+    background-color: var(--trading-surface);
+  }
+  
+  .border-trading-green {
+    border-color: var(--trading-green);
+  }
+  
+  .border-trading-red {
+    border-color: var(--trading-red);
+  }
+  
+  .border-trading-blue {
+    border-color: var(--trading-blue);
+  }
+  
+  .border-trading-warning {
+    border-color: var(--trading-warning);
+  }
+}
