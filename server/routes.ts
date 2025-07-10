@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!query) {
         return res.status(400).json({ error: "Query parameter 'q' is required" });
       }
-      
+
       const stocks = await storage.searchStocks(query);
       res.json(stocks);
     } catch (error) {
@@ -33,11 +33,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const stock = await storage.getStockBySymbol(symbol);
-      
+
       if (!stock) {
         return res.status(404).json({ error: "Stock not found" });
       }
-      
+
       res.json(stock);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch stock" });
@@ -49,11 +49,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // For MVP, using userId = 1
       const portfolio = await storage.getPortfolio(1);
-      
+
       if (!portfolio) {
         return res.status(404).json({ error: "Portfolio not found" });
       }
-      
+
       res.json(portfolio);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch portfolio" });
@@ -76,21 +76,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const watchlistSchema = insertWatchlistSchema.extend({
         stockSymbol: z.string().min(1)
       });
-      
+
       const { stockSymbol } = watchlistSchema.parse(req.body);
-      
+
       // Find stock by symbol
       const stock = await storage.getStockBySymbol(stockSymbol.toUpperCase());
       if (!stock) {
         return res.status(404).json({ error: "Stock not found" });
       }
-      
+
       // Add to watchlist (userId = 1 for MVP)
       const watchlistItem = await storage.addToWatchlist({
         userId: 1,
         stockId: stock.id
       });
-      
+
       res.status(201).json(watchlistItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -106,12 +106,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(stockId)) {
         return res.status(400).json({ error: "Invalid stock ID" });
       }
-      
+
       const removed = await storage.removeFromWatchlist(1, stockId);
       if (!removed) {
         return res.status(404).json({ error: "Watchlist item not found" });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to remove from watchlist" });
@@ -134,12 +134,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(stockId)) {
         return res.status(400).json({ error: "Invalid stock ID" });
       }
-      
+
       const prediction = await storage.getAiPrediction(stockId);
       if (!prediction) {
         return res.status(404).json({ error: "Prediction not found" });
       }
-      
+
       res.json(prediction);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch prediction" });
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(stockId)) {
         return res.status(400).json({ error: "Invalid stock ID" });
       }
-      
+
       const signals = await storage.getTradingSignalsByStock(stockId);
       res.json(signals);
     } catch (error) {
@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!sentiment) {
         return res.status(404).json({ error: "Market sentiment not found" });
       }
-      
+
       res.json(sentiment);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch market sentiment" });
@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const predictions = await storage.getAiPredictions();
       const stocks = await storage.getStocks();
-      
+
       // Get top 5 recommendations based on AI score
       const recommendations = predictions
         .sort((a, b) => b.aiScore - a.aiScore)
@@ -199,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return { ...prediction, stock };
         })
         .filter(item => item.stock);
-      
+
       res.json(recommendations);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch recommendations" });
@@ -211,28 +211,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const stock = await storage.getStockBySymbol(symbol);
-      
+
       if (!stock) {
         return res.status(404).json({ error: "Stock not found" });
       }
-      
+
       // Generate mock chart data
       const now = new Date();
       const chartData = [];
       const basePrice = parseFloat(stock.price);
-      
+
       for (let i = 13; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 30 * 60 * 1000); // 30 minutes intervals
         const priceVariation = (Math.random() - 0.5) * 0.02; // ±1% variation
         const price = basePrice + (basePrice * priceVariation);
-        
+
         chartData.push({
           time: time.toISOString(),
           price: price.toFixed(2),
           volume: Math.floor(Math.random() * 1000000) + 500000
         });
       }
-      
+
       res.json(chartData);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch chart data" });

@@ -1,123 +1,107 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { z } from 'zod';
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  email: text("email").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow(),
+// Base schemas
+export const StockSchema = z.object({
+  id: z.number().positive(),
+  symbol: z.string().regex(/^[A-Z]{1,5}$/, 'Invalid stock symbol'),
+  name: z.string().min(1).max(100),
+  sector: z.string().min(1).max(50),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
+  change: z.string().regex(/^[+-]?\d+(\.\d{1,2})?$/, 'Invalid change format'),
+  changePercent: z.string().regex(/^[+-]?\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
 });
 
-export const stocks = pgTable("stocks", {
-  id: serial("id").primaryKey(),
-  symbol: text("symbol").notNull().unique(),
-  name: text("name").notNull(),
-  sector: text("sector"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  change: decimal("change", { precision: 10, scale: 2 }).notNull(),
-  changePercent: decimal("change_percent", { precision: 5, scale: 2 }).notNull(),
-  volume: integer("volume").notNull(),
-  marketCap: decimal("market_cap", { precision: 20, scale: 2 }),
-  lastUpdated: timestamp("last_updated").defaultNow(),
+export const ChartDataSchema = z.object({
+  time: z.string().datetime(),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
 });
 
-export const portfolios = pgTable("portfolios", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  totalValue: decimal("total_value", { precision: 15, scale: 2 }).notNull(),
-  dayPL: decimal("day_pl", { precision: 15, scale: 2 }).notNull(),
-  dayPLPercent: decimal("day_pl_percent", { precision: 5, scale: 2 }).notNull(),
-  buyingPower: decimal("buying_power", { precision: 15, scale: 2 }).notNull(),
-  lastUpdated: timestamp("last_updated").defaultNow(),
+export const PredictionSchema = z.object({
+  id: z.number().positive(),
+  stockId: z.number().positive(),
+  prediction24h: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid prediction format'),
+  prediction7d: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid prediction format'),
+  confidence: z.number().min(0).max(100),
+  createdAt: z.string().datetime(),
 });
 
-export const watchlists = pgTable("watchlists", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  stockId: integer("stock_id").references(() => stocks.id),
-  addedAt: timestamp("added_at").defaultNow(),
+export const TradingSignalSchema = z.object({
+  id: z.number().positive(),
+  stockId: z.number().positive(),
+  signalType: z.enum(['BUY', 'SELL', 'HOLD']),
+  description: z.string().min(1).max(500),
+  confidence: z.number().min(0).max(100),
+  targetPrice: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
+  stopLoss: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
+  createdAt: z.string().datetime(),
 });
 
-export const aiPredictions = pgTable("ai_predictions", {
-  id: serial("id").primaryKey(),
-  stockId: integer("stock_id").references(() => stocks.id),
-  prediction24h: decimal("prediction_24h", { precision: 10, scale: 2 }).notNull(),
-  prediction7d: decimal("prediction_7d", { precision: 10, scale: 2 }).notNull(),
-  confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull(),
-  signal: text("signal").notNull(), // 'BUY', 'SELL', 'HOLD', 'WATCH'
-  aiScore: integer("ai_score").notNull(),
-  lastUpdated: timestamp("last_updated").defaultNow(),
+export const PortfolioSchema = z.object({
+  id: z.number().positive(),
+  userId: z.number().positive(),
+  totalValue: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid value format'),
+  dayChange: z.string().regex(/^[+-]?\d+(\.\d{1,2})?$/, 'Invalid change format'),
+  dayChangePercent: z.string().regex(/^[+-]?\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
 });
 
-export const tradingSignals = pgTable("trading_signals", {
-  id: serial("id").primaryKey(),
-  stockId: integer("stock_id").references(() => stocks.id),
-  signalType: text("signal_type").notNull(), // 'BUY', 'SELL', 'HOLD', 'WATCH'
-  description: text("description").notNull(),
-  strength: text("strength").notNull(), // 'STRONG', 'MODERATE', 'WEAK'
-  createdAt: timestamp("created_at").defaultNow(),
+export const WatchlistItemSchema = z.object({
+  id: z.number().positive(),
+  userId: z.number().positive(),
+  stockId: z.number().positive(),
+  addedAt: z.string().datetime(),
 });
 
-export const marketSentiment = pgTable("market_sentiment", {
-  id: serial("id").primaryKey(),
-  overall: text("overall").notNull(), // 'BULLISH', 'BEARISH', 'NEUTRAL'
-  bullishPercent: decimal("bullish_percent", { precision: 5, scale: 2 }).notNull(),
-  bearishPercent: decimal("bearish_percent", { precision: 5, scale: 2 }).notNull(),
-  neutralPercent: decimal("neutral_percent", { precision: 5, scale: 2 }).notNull(),
-  lastUpdated: timestamp("last_updated").defaultNow(),
+export const MarketSentimentSchema = z.object({
+  id: z.number().positive(),
+  overall: z.enum(['BULLISH', 'BEARISH', 'NEUTRAL']),
+  bullishPercent: z.string().regex(/^\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
+  bearishPercent: z.string().regex(/^\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
+  neutralPercent: z.string().regex(/^\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
+  updatedAt: z.string().datetime(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  email: true,
+export const RecommendationSchema = z.object({
+  id: z.number().positive(),
+  stockId: z.number().positive(),
+  prediction24h: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid prediction format'),
+  change24h: z.string().regex(/^[+-]?\d+(\.\d{1,2})?%$/, 'Invalid percentage format'),
+  aiScore: z.number().min(0).max(100),
+  reasoning: z.string().min(1).max(1000),
 });
 
-export const insertStockSchema = createInsertSchema(stocks).omit({
-  id: true,
-  lastUpdated: true,
+// API Response schemas
+export const ApiResponseSchema = z.object({
+  data: z.any().optional(),
+  error: z.string().optional(),
+  message: z.string().optional(),
+  timestamp: z.string().datetime().optional(),
 });
 
-export const insertPortfolioSchema = createInsertSchema(portfolios).omit({
-  id: true,
-  lastUpdated: true,
+export const HealthCheckSchema = z.object({
+  status: z.enum(['OK', 'ERROR']),
+  timestamp: z.string().datetime(),
+  uptime: z.number(),
+  environment: z.string(),
 });
 
-export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
-  id: true,
-  addedAt: true,
-});
+// Export types
+export type Stock = z.infer<typeof StockSchema>;
+export type ChartData = z.infer<typeof ChartDataSchema>;
+export type Prediction = z.infer<typeof PredictionSchema>;
+export type TradingSignal = z.infer<typeof TradingSignalSchema>;
+export type Portfolio = z.infer<typeof PortfolioSchema>;
+export type WatchlistItem = z.infer<typeof WatchlistItemSchema>;
+export type MarketSentiment = z.infer<typeof MarketSentimentSchema>;
+export type Recommendation = z.infer<typeof RecommendationSchema>;
+export type ApiResponse = z.infer<typeof ApiResponseSchema>;
+export type HealthCheck = z.infer<typeof HealthCheckSchema>;
 
-export const insertAiPredictionSchema = createInsertSchema(aiPredictions).omit({
-  id: true,
-  lastUpdated: true,
-});
-
-export const insertTradingSignalSchema = createInsertSchema(tradingSignals).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertMarketSentimentSchema = createInsertSchema(marketSentiment).omit({
-  id: true,
-  lastUpdated: true,
-});
-
-// Types
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Stock = typeof stocks.$inferSelect;
-export type InsertStock = z.infer<typeof insertStockSchema>;
-export type Portfolio = typeof portfolios.$inferSelect;
-export type InsertPortfolio = z.infer<typeof insertPortfolioSchema>;
-export type Watchlist = typeof watchlists.$inferSelect;
-export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
-export type AiPrediction = typeof aiPredictions.$inferSelect;
-export type InsertAiPrediction = z.infer<typeof insertAiPredictionSchema>;
-export type TradingSignal = typeof tradingSignals.$inferSelect;
-export type InsertTradingSignal = z.infer<typeof insertTradingSignalSchema>;
-export type MarketSentiment = typeof marketSentiment.$inferSelect;
-export type InsertMarketSentiment = z.infer<typeof insertMarketSentimentSchema>;
+// Validation utilities
+export const validateStock = (data: unknown): Stock => StockSchema.parse(data);
+export const validateChartData = (data: unknown): ChartData => ChartDataSchema.parse(data);
+export const validatePrediction = (data: unknown): Prediction => PredictionSchema.parse(data);
+export const validateTradingSignal = (data: unknown): TradingSignal => TradingSignalSchema.parse(data);
+export const validatePortfolio = (data: unknown): Portfolio => PortfolioSchema.parse(data);
+export const validateWatchlistItem = (data: unknown): WatchlistItem => WatchlistItemSchema.parse(data);
+export const validateMarketSentiment = (data: unknown): MarketSentiment => MarketSentimentSchema.parse(data);
+export const validateRecommendation = (data: unknown): Recommendation => RecommendationSchema.parse(data);
