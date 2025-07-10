@@ -202,8 +202,8 @@ export class MemStorage implements IStorage {
       ...insertStock,
       id,
       lastUpdated: new Date(),
-      sector: insertStock.sector || null,
-      marketCap: insertStock.marketCap || null
+      sector: insertStock.sector || "Unknown",
+      marketCap: insertStock.marketCap || "0"
     };
     this.stocks.set(id, stock);
     return stock;
@@ -237,7 +237,7 @@ export class MemStorage implements IStorage {
       ...insertPortfolio,
       id,
       lastUpdated: new Date(),
-      userId: insertPortfolio.userId || null
+      userId: insertPortfolio.userId || 0
     };
     this.portfolios.set(id, portfolio);
     return portfolio;
@@ -271,8 +271,8 @@ export class MemStorage implements IStorage {
       ...insertWatchlist,
       id,
       addedAt: new Date(),
-      userId: insertWatchlist.userId || null,
-      stockId: insertWatchlist.stockId || null
+      userId: insertWatchlist.userId || 0,
+      stockId: insertWatchlist.stockId || 0
     };
     this.watchlists.set(id, watchlistItem);
     return watchlistItem;
@@ -301,7 +301,7 @@ export class MemStorage implements IStorage {
       ...insertPrediction,
       id,
       lastUpdated: new Date(),
-      stockId: insertPrediction.stockId || null
+      stockId: insertPrediction.stockId || 0
     };
     this.aiPredictions.set(id, prediction);
     return prediction;
@@ -331,7 +331,7 @@ export class MemStorage implements IStorage {
       ...insertSignal,
       id,
       createdAt: new Date(),
-      stockId: insertSignal.stockId || null
+      stockId: insertSignal.stockId || 0
     };
     this.tradingSignals.set(id, signal);
     return signal;
