@@ -2,23 +2,31 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { apiRoutes } from './routes.js';
-import { viteDev } from './vite.js';
+import { registerRoutes } from './routes.js';
+import { setupVite, serveStatic } from './vite.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+if (process.env.NODE_ENV === 'production') {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+      },
     },
-  },
-}));
+  }));
+} else {
+  // Disable CSP in development for Vite HMR
+  app.use(helmet({
+    contentSecurityPolicy: false,
+  }));
+}
 
 // Rate limiting
 const limiter = rateLimit({
@@ -50,8 +58,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
-app.use('/api', apiRoutes);
+// Set up routes and get HTTP server
+const server = await registerRoutes(app);
+
+// Development middleware
+if (process.env.NODE_ENV === 'development') {
+  await setupVite(app, server);
+} else {
+  serveStatic(app);
+}
 
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -62,20 +77,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: `Route ${req.originalUrl} not found`,
-  });
-});
-
-// Development middleware
-if (process.env.NODE_ENV === 'development') {
-  viteDev(app);
-}
-
-const server = app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   const timestamp = new Date().toLocaleTimeString();
   console.log(`${timestamp} [express] serving on port ${PORT}`);
 });
