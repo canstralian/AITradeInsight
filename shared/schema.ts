@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pgTable, serial, text, timestamp, numeric, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, numeric, integer, pgEnum, varchar, jsonb, index } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 // Define enums for database
@@ -7,8 +7,30 @@ export const signalTypeEnum = pgEnum('signal_type', ['BUY', 'SELL', 'HOLD', 'WAT
 export const sentimentEnum = pgEnum('sentiment', ['BULLISH', 'BEARISH', 'NEUTRAL']);
 export const strengthEnum = pgEnum('strength', ['STRONG', 'MODERATE', 'WEAK']);
 
-// Database tables
-export const usersTable = pgTable('users', {
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Legacy users table (keeping for backward compatibility)
+export const usersTable = pgTable('users_legacy', {
   id: serial('id').primaryKey(),
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),
@@ -94,8 +116,12 @@ export const selectAiPredictionSchema = createSelectSchema(aiPredictionsTable);
 export const selectTradingSignalSchema = createSelectSchema(tradingSignalsTable);
 export const selectMarketSentimentSchema = createSelectSchema(marketSentimentTable);
 
-// Infer types
-export type User = typeof usersTable.$inferSelect;
+// Infer types for Replit Auth
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
+
+// Legacy types
+export type LegacyUser = typeof usersTable.$inferSelect;
 export type InsertUser = typeof usersTable.$inferInsert;
 export type Stock = typeof stocksTable.$inferSelect;
 export type InsertStock = typeof stocksTable.$inferInsert;

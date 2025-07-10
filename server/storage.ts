@@ -1,15 +1,18 @@
 import { 
-  users, stocks, portfolios, watchlists, aiPredictions, tradingSignals, marketSentiment,
-  type User, type InsertUser, type Stock, type InsertStock, type Portfolio, type InsertPortfolio,
+  users, stocksTable, portfoliosTable, watchlistTable, aiPredictionsTable, tradingSignalsTable, marketSentimentTable,
+  type User, type UpsertUser, type LegacyUser, type InsertUser, type Stock, type InsertStock, type Portfolio, type InsertPortfolio,
   type Watchlist, type InsertWatchlist, type AiPrediction, type InsertAiPrediction,
   type TradingSignal, type InsertTradingSignal, type MarketSentiment, type InsertMarketSentiment
 } from "@shared/schema";
 
 export interface IStorage {
-  // User methods
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // User methods (for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Legacy user methods
+  getUserByUsername(username: string): Promise<LegacyUser | undefined>;
+  createUser(user: InsertUser): Promise<LegacyUser>;
   
   // Stock methods
   getStocks(): Promise<Stock[]>;
@@ -48,7 +51,8 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
+  private replitUsers: Map<string, User> = new Map();
+  private legacyUsers: Map<number, LegacyUser> = new Map();
   private stocks: Map<number, Stock> = new Map();
   private portfolios: Map<number, Portfolio> = new Map();
   private watchlists: Map<number, Watchlist> = new Map();
@@ -143,23 +147,39 @@ export class MemStorage implements IStorage {
     });
   }
 
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  // User methods (for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    return this.replitUsers.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const user: User = {
+      id: userData.id!,
+      email: userData.email || null,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
+      createdAt: userData.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+    this.replitUsers.set(user.id, user);
+    return user;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  // Legacy user methods
+  async getUserByUsername(username: string): Promise<LegacyUser | undefined> {
+    return Array.from(this.legacyUsers.values()).find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<LegacyUser> {
     const id = this.currentUserId++;
-    const user: User = { 
+    const user: LegacyUser = { 
       ...insertUser, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
-    this.users.set(id, user);
+    this.legacyUsers.set(id, user);
     return user;
   }
 
@@ -345,4 +365,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { DatabaseStorage } from './databaseStorage';
+
+export const storage = new DatabaseStorage();
