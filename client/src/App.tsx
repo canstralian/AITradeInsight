@@ -16,15 +16,15 @@ function Router() {
   );
 }
 
-function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="dark">
-          <Toaster />
-          <Router />
-        </div>
-      </TooltipProvider>
+      <div className="touch-manipulation">
+        <Router>
+          <Route path="/" component={Dashboard} />
+          <Route component={NotFound} />
+        </Router>
+      </div>
     </QueryClientProvider>
   );
 }

@@ -155,4 +155,52 @@
   .border-trading-warning {
     border-color: var(--trading-warning);
   }
+  
+  /* Mobile-first touch optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Responsive text sizing */
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  /* Mobile-optimized spacing */
+  .space-mobile-y > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  @screen sm {
+    .space-mobile-y > * + * {
+      margin-top: 1rem;
+    }
+  }
+  
+  /* Safe area padding for mobile devices with notches */
+  .safe-padding-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-padding-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Scroll optimizations */
+  .scroll-smooth-mobile {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
 }

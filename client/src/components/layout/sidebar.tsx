@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   Brain, 
@@ -6,78 +7,146 @@ import {
   Star, 
   Wallet, 
   User,
-  BarChart3
+  BarChart3,
+  Menu,
+  X
 } from "lucide-react";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-export function Sidebar() {
+const navigationItems = [
+  { icon: Home, label: "Dashboard", href: "#", active: true },
+  { icon: Brain, label: "AI Predictions", href: "#" },
+  { icon: TrendingUp, label: "Trading Signals", href: "#" },
+  { icon: Newspaper, label: "Market Sentiment", href: "#" },
+  { icon: Star, label: "Watchlist", href: "#" },
+  { icon: Wallet, label: "Portfolio", href: "#" },
+];
+
+function NavigationContent() {
   return (
-    <div className="w-64 bg-trading-surface border-r border-border flex flex-col">
+    <>
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <BarChart3 className="w-6 h-6" />
-          AI Trading Assistant
+      <div className="p-4 sm:p-6 border-b border-border">
+        <h1 className="text-lg sm:text-xl font-bold text-primary flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
+          <span className="hidden sm:inline">AI Trading Assistant</span>
+          <span className="sm:hidden">AI Trading</span>
         </h1>
       </div>
       
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </a>
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-trading-neutral hover:bg-trading-surface hover:text-foreground transition-colors"
-        >
-          <Brain className="w-4 h-4" />
-          <span>AI Predictions</span>
-        </a>
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-trading-neutral hover:bg-trading-surface hover:text-foreground transition-colors"
-        >
-          <TrendingUp className="w-4 h-4" />
-          <span>Trading Signals</span>
-        </a>
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-trading-neutral hover:bg-trading-surface hover:text-foreground transition-colors"
-        >
-          <Newspaper className="w-4 h-4" />
-          <span>Market Sentiment</span>
-        </a>
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-trading-neutral hover:bg-trading-surface hover:text-foreground transition-colors"
-        >
-          <Star className="w-4 h-4" />
-          <span>Watchlist</span>
-        </a>
-        <a 
-          href="#" 
-          className="flex items-center space-x-3 px-3 py-2 rounded-lg text-trading-neutral hover:bg-trading-surface hover:text-foreground transition-colors"
-        >
-          <Wallet className="w-4 h-4" />
-          <span>Portfolio</span>
-        </a>
+      <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2">
+        {navigationItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <a 
+              key={item.label}
+              href={item.href} 
+              className={`
+                flex items-center space-x-3 px-3 py-3 sm:py-2 rounded-lg transition-colors
+                touch-manipulation min-h-[48px] sm:min-h-[40px]
+                ${item.active 
+                  ? "bg-primary/10 text-primary border border-primary/20" 
+                  : "text-trading-neutral hover:bg-trading-surface hover:text-foreground"
+                }
+              `}
+            >
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              <span className="font-medium">{item.label}</span>
+            </a>
+          );
+        })}
       </nav>
       
       {/* User Profile */}
-      <div className="p-4 border-t border-border">
+      <div className="p-3 sm:p-4 border-t border-border">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
             <User className="w-5 h-5 text-background" />
           </div>
-          <div>
-            <p className="text-sm font-medium">John Trader</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">John Trader</p>
             <p className="text-xs text-trading-neutral">Pro Member</p>
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+export function Sidebar() {
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile hamburger trigger */}
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="fixed top-4 left-4 z-50 bg-background border border-border shadow-lg lg:hidden"
+            >
+              <Menu className="w-5 h-5" />
+              <span className="sr-only">Open navigation menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent 
+            side="left" 
+            className="w-80 p-0 bg-trading-surface border-r border-border"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>Navigation Menu</SheetTitle>
+            </SheetHeader>
+            <div className="flex flex-col h-full">
+              <NavigationContent />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  // Desktop sidebar
+  return (
+    <div className="hidden lg:flex w-64 bg-trading-surface border-r border-border flex-col">
+      <NavigationContent />
     </div>
+  );
+}
+
+// Export mobile menu trigger for use in topbar
+export function MobileMenuTrigger() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="lg:hidden"
+        >
+          <Menu className="w-5 h-5" />
+          <span className="sr-only">Open navigation menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent 
+        side="left" 
+        className="w-80 p-0 bg-trading-surface border-r border-border"
+      >
+        <SheetHeader className="sr-only">
+          <SheetTitle>Navigation Menu</SheetTitle>
+        </SheetHeader>
+        <div className="flex flex-col h-full">
+          <NavigationContent />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
