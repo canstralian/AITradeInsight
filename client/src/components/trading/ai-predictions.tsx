@@ -100,3 +100,5 @@ export function AiPredictions() {
     </Card>
   );
 }
+
+export default AiPredictions;

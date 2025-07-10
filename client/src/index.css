@@ -93,8 +93,9 @@
   }
   
   .trading-card:hover {
-    @apply border-primary/50 shadow-lg transform scale-[1.01];
+    @apply border-primary shadow-lg transform scale-[1.01];
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    border-color: hsl(166, 100%, 42%, 0.5);
   }
   
   .trading-card:hover::before {
