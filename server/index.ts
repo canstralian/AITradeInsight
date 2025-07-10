@@ -8,6 +8,9 @@ import { setupVite, serveStatic } from './vite.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for rate limiting (required in Replit environment)
+app.set('trust proxy', 1);
+
 // Security middleware
 if (process.env.NODE_ENV === 'production') {
   app.use(helmet({
