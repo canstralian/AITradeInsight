@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertStockSchema, insertWatchlistSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { AIService } from "./aiService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -259,6 +260,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(chartData);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch chart data" });
+    }
+  });
+
+  // AI Analysis routes
+  app.get("/api/ai/analyze/:symbol", async (req, res) => {
+    try {
+      const symbol = req.params.symbol.toUpperCase();
+      const stock = await storage.getStockBySymbol(symbol);
+
+      if (!stock) {
+        return res.status(404).json({ error: "Stock not found" });
+      }
+
+      const analysis = await AIService.analyzeStock(symbol, stock);
+      res.json({ symbol, analysis });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate AI analysis" });
+    }
+  });
+
+  app.get("/api/ai/market-sentiment", async (req, res) => {
+    try {
+      const stocks = await storage.getStocks();
+      const sentiment = await AIService.generateMarketSentiment(stocks.slice(0, 10));
+      res.json({ sentiment });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate market sentiment" });
     }
   });
 
