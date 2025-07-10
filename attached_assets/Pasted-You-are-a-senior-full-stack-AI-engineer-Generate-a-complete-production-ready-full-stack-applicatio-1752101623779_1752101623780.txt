@@ -1,0 +1,43 @@
+You are a senior full-stack AI engineer.
+
+Generate a complete production-ready full-stack application that serves as a **Smart AI Trading Assistant**. This system will use Python (FastAPI) for the backend and React (with TradingView and Chart.js) for the frontend. It will support AI-driven price prediction, swing/day trade signals, sentiment analysis, options strategies, and earnings predictions.
+
+🛠 Stack Requirements:
+- Backend: FastAPI (Python), pydantic, CORS, RESTful API design
+- ML Models: LSTM (price), RoBERTa (sentiment), XGBoost (earnings), rule-based strategy (swing/day)
+- Frontend: React (Vite preferred), Axios, react-tradingview-widget, modular component structure
+- Notifications: Optional hooks for push/email/websocket alerts
+- Charts: TradingView widget + Chart.js for historical and signal overlays
+- Testing: Pytest or unittest for backend; include one test per endpoint
+- Folder Structure: Follow best practices for modularity (e.g., `backend/models/`, `frontend/src/components/`)
+- Deployment: Dockerfile and optional `docker-compose.yml` for local dev
+
+🔐 Security:
+- JWT-based auth scaffold
+- Basic rate limiting, input sanitization, and model safety constraints
+
+🔎 Features:
+1. **Price Prediction**: Accepts stock ticker & timeframe, returns next-day or short-term price forecast.
+2. **Swing Trade Signal**: Entry/exit suggestion based on technicals and model output.
+3. **Day Trade Strategy**: Real-time strategy and trigger points for intraday patterns.
+4. **Market Sentiment**: NLP-based score from recent financial news or social media.
+5. **Options Strategy**: Suggests optimal spread/straddle/strangle with payoff diagram.
+6. **Earnings Prediction**: Uses fundamentals to predict EPS.
+7. **Real-time Charts**: Embedded TradingView with overlays for swing/day indicators.
+8. **AI Stock Picker**: Returns top 5 tickers based on multi-factor AI ranking.
+
+📄 Output:
+- All code files with proper headers, docstrings, and comments
+- Tests for backend endpoints
+- A README.md with setup, model usage, and contribution notes
+- Optional: Include fake/mock dataset loaders and utility functions
+
+💡 Notes:
+- Use clean, PEP 8–compliant code
+- Favor Object-Oriented Programming for reusable components
+- Add placeholders for API keys (e.g., Alpha Vantage, Polygon)
+- All generated ML models can use stub or dummy inference logic
+
+Generate all necessary code files and test stubs as if delivering this project as an MVP to a client or launching on GitHub.
+
+Begin with backend → ML models → frontend → tests → docker → README.
