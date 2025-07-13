@@ -5,10 +5,91 @@ import { z } from "zod";
 import { insertStockSchema, insertWatchlistSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { AIService } from "./aiService";
+import { rateLimiters } from "./rateLimiter";
+import { MFAService } from "./mfaService";
+import { TradingLimitsService } from "./tradingLimits";
+import { AuditLogger, auditMiddleware } from "./auditLogger";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
+  
+  // Apply audit middleware to all routes
+  app.use('/api', auditMiddleware);
+
+  // MFA routes
+  app.post('/api/auth/mfa/setup', rateLimiters.auth, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const userEmail = req.user?.claims?.email;
+      
+      if (!userId || !userEmail) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const mfaSetup = await MFAService.setupMFA(userId, userEmail);
+      
+      await AuditLogger.logAction(userId, 'MFA_SETUP_INITIATED', 'AUTH', {}, req, 'MEDIUM');
+      
+      res.json({
+        qrCodeUrl: mfaSetup.qrCodeUrl,
+        backupCodes: mfaSetup.backupCodes,
+      });
+    } catch (error) {
+      console.error("MFA setup error:", error);
+      res.status(500).json({ message: "Failed to setup MFA" });
+    }
+  });
+
+  app.post('/api/auth/mfa/verify', rateLimiters.auth, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { token } = req.body;
+      
+      if (!userId || !token) {
+        return res.status(400).json({ message: "Missing required data" });
+      }
+      
+      const isSetup = await MFAService.completeMFASetup(userId, token);
+      
+      if (isSetup) {
+        await AuditLogger.logAction(userId, 'MFA_SETUP_COMPLETED', 'AUTH', {}, req, 'HIGH');
+        res.json({ message: "MFA setup completed successfully" });
+      } else {
+        await AuditLogger.logAction(userId, 'MFA_SETUP_FAILED', 'AUTH', { token: token.substring(0, 2) + '****' }, req, 'MEDIUM');
+        res.status(400).json({ message: "Invalid verification code" });
+      }
+    } catch (error) {
+      console.error("MFA verification error:", error);
+      res.status(500).json({ message: "Failed to verify MFA" });
+    }
+  });
+
+  app.get('/api/auth/trading-limits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const limits = await TradingLimitsService.getUserLimits(userId);
+      res.json(limits);
+    } catch (error) {
+      console.error("Error fetching trading limits:", error);
+      res.status(500).json({ message: "Failed to fetch trading limits" });
+    }
+  });
+
+  app.post('/api/auth/trading-limits', rateLimiters.trading, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const limits = req.body;
+      
+      await TradingLimitsService.setUserLimits(userId, limits);
+      await AuditLogger.logAction(userId, 'TRADING_LIMITS_UPDATED', 'SETTINGS', limits, req, 'MEDIUM');
+      
+      res.json({ message: "Trading limits updated successfully" });
+    } catch (error) {
+      console.error("Error updating trading limits:", error);
+      res.status(500).json({ message: "Failed to update trading limits" });
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -85,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Watchlist routes
-  app.get("/api/watchlist", async (req, res) => {
+  app.get("/api/watchlist", rateLimiters.watchlist, async (req, res) => {
     try {
       // For MVP, using userId = 1
       const watchlist = await storage.getWatchlistWithStocks(1);
@@ -264,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Analysis routes
-  app.get("/api/ai/analyze/:symbol", async (req, res) => {
+  app.get("/api/ai/analyze/:symbol", rateLimiters.aiAnalysis, async (req, res) => {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const stock = await storage.getStockBySymbol(symbol);

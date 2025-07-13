@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import { rateLimiters } from './rateLimiter.js';
 import { registerRoutes } from './routes.js';
 import { setupVite, serveStatic } from './vite.js';
 
@@ -31,16 +31,8 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-  },
-});
-
-app.use(limiter);
+// Apply enhanced rate limiting
+app.use('/api', rateLimiters.general);
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 

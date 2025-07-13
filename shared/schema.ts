@@ -136,6 +136,48 @@ export type InsertTradingSignal = typeof tradingSignalsTable.$inferInsert;
 export type MarketSentiment = typeof marketSentimentTable.$inferSelect;
 export type InsertMarketSentiment = typeof marketSentimentTable.$inferInsert;
 
+// Security tables
+export const mfaTable = pgTable('mfa_settings', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  secret: varchar('secret').notNull(),
+  backupCodes: jsonb('backup_codes'),
+  isVerified: varchar('is_verified').default('false'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const tradingLimitsTable = pgTable('trading_limits', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull().unique(),
+  dailyTradeLimit: numeric('daily_trade_limit', { precision: 15, scale: 2 }),
+  maxPositionSize: numeric('max_position_size', { precision: 15, scale: 2 }),
+  maxPortfolioValue: numeric('max_portfolio_value', { precision: 15, scale: 2 }),
+  riskThreshold: numeric('risk_threshold', { precision: 5, scale: 4 }),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const tradesTable = pgTable('trades', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  stockSymbol: varchar('stock_symbol').notNull(),
+  amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
+  tradeType: varchar('trade_type').notNull(),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
+export const auditLogsTable = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  action: varchar('action').notNull(),
+  resource: varchar('resource').notNull(),
+  details: jsonb('details'),
+  ipAddress: varchar('ip_address'),
+  userAgent: text('user_agent'),
+  severity: varchar('severity').notNull(),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
 // Additional schemas for API responses
 export const StockSchema = z.object({
   id: z.number().positive(),

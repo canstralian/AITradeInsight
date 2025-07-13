@@ -9,11 +9,11 @@ export interface IStorage {
   // User methods (for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Legacy user methods
   getUserByUsername(username: string): Promise<LegacyUser | undefined>;
   createUser(user: InsertUser): Promise<LegacyUser>;
-  
+
   // Stock methods
   getStocks(): Promise<Stock[]>;
   getStock(id: number): Promise<Stock | undefined>;
@@ -21,29 +21,29 @@ export interface IStorage {
   createStock(stock: InsertStock): Promise<Stock>;
   updateStock(id: number, stock: Partial<InsertStock>): Promise<Stock | undefined>;
   searchStocks(query: string): Promise<Stock[]>;
-  
+
   // Portfolio methods
   getPortfolio(userId: number): Promise<Portfolio | undefined>;
   createPortfolio(portfolio: InsertPortfolio): Promise<Portfolio>;
   updatePortfolio(userId: number, portfolio: Partial<InsertPortfolio>): Promise<Portfolio | undefined>;
-  
+
   // Watchlist methods
   getWatchlist(userId: number): Promise<Watchlist[]>;
   getWatchlistWithStocks(userId: number): Promise<(Watchlist & { stock: Stock })[]>;
   addToWatchlist(watchlistItem: InsertWatchlist): Promise<Watchlist>;
   removeFromWatchlist(userId: number, stockId: number): Promise<boolean>;
-  
+
   // AI Predictions methods
   getAiPredictions(): Promise<AiPrediction[]>;
   getAiPrediction(stockId: number): Promise<AiPrediction | undefined>;
   createAiPrediction(prediction: InsertAiPrediction): Promise<AiPrediction>;
   updateAiPrediction(stockId: number, prediction: Partial<InsertAiPrediction>): Promise<AiPrediction | undefined>;
-  
+
   // Trading Signals methods
   getTradingSignals(): Promise<TradingSignal[]>;
   getTradingSignalsByStock(stockId: number): Promise<TradingSignal[]>;
   createTradingSignal(signal: InsertTradingSignal): Promise<TradingSignal>;
-  
+
   // Market Sentiment methods
   getMarketSentiment(): Promise<MarketSentiment | undefined>;
   createMarketSentiment(sentiment: InsertMarketSentiment): Promise<MarketSentiment>;
@@ -59,7 +59,7 @@ export class MemStorage implements IStorage {
   private aiPredictions: Map<number, AiPrediction> = new Map();
   private tradingSignals: Map<number, TradingSignal> = new Map();
   private marketSentimentData: MarketSentiment | undefined;
-  
+
   private currentUserId = 1;
   private currentStockId = 1;
   private currentPortfolioId = 1;
@@ -212,7 +212,7 @@ export class MemStorage implements IStorage {
   async updateStock(id: number, updateStock: Partial<InsertStock>): Promise<Stock | undefined> {
     const stock = this.stocks.get(id);
     if (!stock) return undefined;
-    
+
     const updatedStock = { ...stock, ...updateStock, lastUpdated: new Date() };
     this.stocks.set(id, updatedStock);
     return updatedStock;
@@ -246,7 +246,7 @@ export class MemStorage implements IStorage {
   async updatePortfolio(userId: number, updatePortfolio: Partial<InsertPortfolio>): Promise<Portfolio | undefined> {
     const portfolio = Array.from(this.portfolios.values()).find(p => p.userId === userId);
     if (!portfolio) return undefined;
-    
+
     const updatedPortfolio = { ...portfolio, ...updatePortfolio, lastUpdated: new Date() };
     this.portfolios.set(portfolio.id, updatedPortfolio);
     return updatedPortfolio;
@@ -281,7 +281,7 @@ export class MemStorage implements IStorage {
   async removeFromWatchlist(userId: number, stockId: number): Promise<boolean> {
     const item = Array.from(this.watchlists.values()).find(w => w.userId === userId && w.stockId === stockId);
     if (!item) return false;
-    
+
     this.watchlists.delete(item.id);
     return true;
   }
@@ -310,7 +310,7 @@ export class MemStorage implements IStorage {
   async updateAiPrediction(stockId: number, updatePrediction: Partial<InsertAiPrediction>): Promise<AiPrediction | undefined> {
     const prediction = Array.from(this.aiPredictions.values()).find(p => p.stockId === stockId);
     if (!prediction) return undefined;
-    
+
     const updatedPrediction = { ...prediction, ...updatePrediction, lastUpdated: new Date() };
     this.aiPredictions.set(prediction.id, updatedPrediction);
     return updatedPrediction;
@@ -355,7 +355,7 @@ export class MemStorage implements IStorage {
 
   async updateMarketSentiment(updateSentiment: Partial<InsertMarketSentiment>): Promise<MarketSentiment | undefined> {
     if (!this.marketSentimentData) return undefined;
-    
+
     this.marketSentimentData = { 
       ...this.marketSentimentData, 
       ...updateSentiment, 
@@ -367,4 +367,27 @@ export class MemStorage implements IStorage {
 
 import { DatabaseStorage } from './databaseStorage';
 
-export const storage = new DatabaseStorage();
+const databaseStorage = new DatabaseStorage();
+
+// Add MFA and security-related methods to storage interface
+export interface StorageInterface extends typeof databaseStorage {
+  // MFA methods
+  storeMFASetup(userId: string, mfaData: any): Promise<void>;
+  getMFASetup(userId: string): Promise<any>;
+  getMFAData(userId: string): Promise<any>;
+  completeMFASetup(userId: string): Promise<void>;
+  disableMFA(userId: string): Promise<void>;
+  removeBackupCode(userId: string, code: string): Promise<void>;
+
+  // Trading limits methods
+  getUserTradingLimits(userId: string): Promise<any>;
+  setUserTradingLimits(userId: string, limits: any): Promise<void>;
+  getDailyTrades(userId: string): Promise<any[]>;
+  recordTrade(tradeData: any): Promise<void>;
+
+  // Audit logging methods
+  saveAuditLog(auditLog: any): Promise<void>;
+  getAuditLogs(filters: any): Promise<any[]>;
+}
+
+export const storage: StorageInterface = databaseStorage as StorageInterface;
