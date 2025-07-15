@@ -8,7 +8,7 @@ import { AIService } from "./aiService";
 import { rateLimiters } from "./rateLimiter";
 import { MFAService } from "./mfaService";
 import { TradingLimitsService } from "./tradingLimits";
-import { AuditLogger } from './auditLogger';
+import { AuditLogger, auditMiddleware } from './auditLogger';
 import { algoliaMCP } from './mcpService';
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -372,111 +372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Crypto routes
-  app.get("/api/crypto/coins", async (req, res) => {
-    try {
-      const coins = await storage.getCryptoCoins();
-      res.json(coins);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch crypto coins" });
-    }
-  });
 
-  app.get("/api/crypto/coins/:symbol", async (req, res) => {
-    try {
-      const symbol = req.params.symbol.toUpperCase();
-      const coin = await storage.getCryptoCoinBySymbol(symbol);
-      if (!coin) {
-        return res.status(404).json({ error: "Coin not found" });
-      }
-      res.json(coin);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch crypto coin" });
-    }
-  });
-
-  app.get("/api/crypto/radar", async (req, res) => {
-    try {
-      const type = req.query.type as string;
-      const radarData = await storage.getCryptoRadar(type);
-      res.json(radarData);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch crypto radar data" });
-    }
-  });
-
-  app.get("/api/crypto/validation/:coinId", async (req, res) => {
-    try {
-      const coinId = parseInt(req.params.coinId);
-      if (isNaN(coinId)) {
-        return res.status(400).json({ error: "Invalid coin ID" });
-      }
-
-      const validation = await AIService.validateCrypto(coinId);
-      res.json(validation);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to validate crypto coin" });
-    }
-  });
-
-  // Automated trading routes
-  app.get("/api/trading/automated", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub || 1; // MVP fallback
-      const trades = await storage.getAutomatedTrades(userId);
-      res.json(trades);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch automated trades" });
-    }
-  });
-
-  app.post("/api/trading/automated", rateLimiters.trading, isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub || 1; // MVP fallback
-      const tradeData = { ...req.body, userId };
-
-      const trade = await storage.createAutomatedTrade(tradeData);
-      await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_CREATED', 'TRADING', { tradeId: trade.id }, req, 'HIGH');
-
-      res.status(201).json(trade);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create automated trade" });
-    }
-  });
-
-  app.put("/api/trading/automated/:tradeId", isAuthenticated, async (req: any, res) => {
-    try {
-      const tradeId = parseInt(req.params.tradeId);
-      const userId = req.user?.claims?.sub || 1; // MVP fallback
-
-      const updatedTrade = await storage.updateAutomatedTrade(tradeId, userId, req.body);
-      if (!updatedTrade) {
-        return res.status(404).json({ error: "Trade not found" });
-      }
-
-      await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_UPDATED', 'TRADING', { tradeId }, req, 'MEDIUM');
-      res.json(updatedTrade);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update automated trade" });
-    }
-  });
-
-  app.delete("/api/trading/automated/:tradeId", isAuthenticated, async (req: any, res) => {
-    try {
-      const tradeId = parseInt(req.params.tradeId);
-      const userId = req.user?.claims?.sub || 1; // MVP fallback
-
-      const cancelled = await storage.cancelAutomatedTrade(tradeId, userId);
-      if (!cancelled) {
-        return res.status(404).json({ error: "Trade not found" });
-      }
-
-      await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_CANCELLED', 'TRADING', { tradeId }, req, 'MEDIUM');
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to cancel automated trade" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
