@@ -61,4 +61,24 @@ export const tradingApi = {
   
   // Chart data endpoint
   getChartData: (symbol: string) => apiRequest<any[]>(`/chart/${symbol}`),
+  
+  // Crypto endpoints
+  getCryptoCoins: () => apiRequest<any[]>('/crypto/coins'),
+  getCryptoCoin: (symbol: string) => apiRequest<any>(`/crypto/coins/${symbol}`),
+  getCryptoRadar: (type?: string) => apiRequest<any[]>(`/crypto/radar${type ? `?type=${type}` : ''}`),
+  getCryptoValidation: (coinId: number) => apiRequest<any>(`/crypto/validation/${coinId}`),
+  
+  // Automated trading endpoints
+  getAutomatedTrades: () => apiRequest<any[]>('/trading/automated'),
+  createAutomatedTrade: (trade: any) => apiRequest<any>('/trading/automated', {
+    method: 'POST',
+    body: JSON.stringify(trade),
+  }),
+  updateAutomatedTrade: (tradeId: number, updates: any) => apiRequest<any>(`/trading/automated/${tradeId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  }),
+  cancelAutomatedTrade: (tradeId: number) => apiRequest<void>(`/trading/automated/${tradeId}`, {
+    method: 'DELETE',
+  }),
 };

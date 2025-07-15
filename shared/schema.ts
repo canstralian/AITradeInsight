@@ -89,6 +89,56 @@ export const tradingSignalsTable = pgTable('trading_signals', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Crypto-specific tables
+export const cryptoCoinsTable = pgTable('crypto_coins', {
+  id: serial('id').primaryKey(),
+  symbol: varchar('symbol', { length: 20 }).unique().notNull(),
+  name: varchar('name', { length: 100 }).notNull(),
+  price: numeric('price', { precision: 18, scale: 8 }).notNull(),
+  change24h: numeric('change_24h', { precision: 10, scale: 2 }).notNull(),
+  changePercent24h: numeric('change_percent_24h', { precision: 10, scale: 2 }).notNull(),
+  volume24h: numeric('volume_24h', { precision: 20, scale: 2 }).notNull(),
+  marketCap: numeric('market_cap', { precision: 20, scale: 2 }).notNull(),
+  whaleActivity: numeric('whale_activity', { precision: 10, scale: 2 }).default('0').notNull(),
+  socialScore: numeric('social_score', { precision: 5, scale: 2 }).default('0').notNull(),
+  technicalScore: numeric('technical_score', { precision: 5, scale: 2 }).default('0').notNull(),
+  lastUpdated: timestamp('last_updated').defaultNow().notNull(),
+});
+
+export const cryptoRadarTable = pgTable('crypto_radar', {
+  id: serial('id').primaryKey(),
+  coinId: integer('coin_id').notNull(),
+  radarType: varchar('radar_type', { length: 50 }).notNull(), // 'whale', 'social', 'technical'
+  signal: signalTypeEnum('signal').notNull(),
+  confidence: numeric('confidence', { precision: 5, scale: 2 }).notNull(),
+  reasoning: text('reasoning').notNull(),
+  whaleData: text('whale_data'), // JSON string
+  socialData: text('social_data'), // JSON string
+  technicalData: text('technical_data'), // JSON string
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const automaticTradesTable = pgTable('automatic_trades', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  coinId: integer('coin_id').notNull(),
+  tradeType: varchar('trade_type', { length: 10 }).notNull(), // 'BUY', 'SELL'
+  amount: numeric('amount', { precision: 18, scale: 8 }).notNull(),
+  price: numeric('price', { precision: 18, scale: 8 }).notNull(),
+  stopLoss: numeric('stop_loss', { precision: 18, scale: 8 }),
+  takeProfit: numeric('take_profit', { precision: 18, scale: 8 }),
+  status: varchar('status', { length: 20 }).default('PENDING').notNull(),
+  executedAt: timestamp('executed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type CryptoCoin = typeof cryptoCoinsTable.$inferSelect;
+export type InsertCryptoCoin = typeof cryptoCoinsTable.$inferInsert;
+export type CryptoRadar = typeof cryptoRadarTable.$inferSelect;
+export type InsertCryptoRadar = typeof cryptoRadarTable.$inferInsert;
+export type AutomaticTrade = typeof automaticTradesTable.$inferSelect;
+export type InsertAutomaticTrade = typeof automaticTradesTable.$inferInsert;
+
 export const marketSentimentTable = pgTable('market_sentiment', {
   id: serial('id').primaryKey(),
   overall: sentimentEnum('overall').notNull(),
