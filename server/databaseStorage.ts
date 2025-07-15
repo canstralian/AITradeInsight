@@ -230,4 +230,59 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedSentiment;
   }
+
+  // Audit logging methods
+  async saveAuditLog(auditLog: any): Promise<void> {
+    // For now, just log to console
+    // In a real implementation, this would save to an audit_logs table
+    console.log(`[AUDIT] ${auditLog.severity}: ${auditLog.action} on ${auditLog.resource} by ${auditLog.userId}`);
+  }
+
+  async getAuditLogs(filters: any): Promise<any[]> {
+    // For now, return empty array
+    // In a real implementation, this would query the audit_logs table
+    return [];
+  }
+
+  // MFA stub implementations
+  async storeMFASetup(userId: string, mfaData: any): Promise<void> {
+    console.log(`[MFA] Setup initiated for user ${userId}`);
+  }
+
+  async getMFASetup(userId: string): Promise<any> {
+    return null;
+  }
+
+  async getMFAData(userId: string): Promise<any> {
+    return null;
+  }
+
+  async completeMFASetup(userId: string): Promise<void> {
+    console.log(`[MFA] Setup completed for user ${userId}`);
+  }
+
+  async disableMFA(userId: string): Promise<void> {
+    console.log(`[MFA] Disabled for user ${userId}`);
+  }
+
+  async removeBackupCode(userId: string, code: string): Promise<void> {
+    console.log(`[MFA] Backup code removed for user ${userId}`);
+  }
+
+  // Trading limits stub implementations
+  async getUserTradingLimits(userId: string): Promise<any> {
+    return null;
+  }
+
+  async setUserTradingLimits(userId: string, limits: any): Promise<void> {
+    console.log(`[TRADING] Limits updated for user ${userId}`, limits);
+  }
+
+  async getDailyTrades(userId: string): Promise<any[]> {
+    return [];
+  }
+
+  async recordTrade(tradeData: any): Promise<void> {
+    console.log(`[TRADING] Trade recorded:`, tradeData);
+  }
 }

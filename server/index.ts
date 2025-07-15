@@ -31,12 +31,14 @@ if (process.env.NODE_ENV === 'production') {
   }));
 }
 
-// Apply enhanced rate limiting
-app.use('/api', rateLimiters.general);
+// Apply enhanced rate limiting only in production
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api', rateLimiters.general);
+}
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : 'http://localhost:3000',
+    : true, // Allow all origins in development
   credentials: true,
 }));
 

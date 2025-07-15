@@ -48,6 +48,10 @@ export interface IStorage {
   getMarketSentiment(): Promise<MarketSentiment | undefined>;
   createMarketSentiment(sentiment: InsertMarketSentiment): Promise<MarketSentiment>;
   updateMarketSentiment(sentiment: Partial<InsertMarketSentiment>): Promise<MarketSentiment | undefined>;
+  
+  // Audit logging methods
+  saveAuditLog(auditLog: any): Promise<void>;
+  getAuditLogs(filters: any): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -362,6 +366,61 @@ export class MemStorage implements IStorage {
       lastUpdated: new Date() 
     };
     return this.marketSentimentData;
+  }
+
+  // Audit logging methods
+  async saveAuditLog(auditLog: any): Promise<void> {
+    // For in-memory storage, we'll just log to console
+    // In a real implementation, this would save to a database
+    console.log(`[AUDIT] ${auditLog.severity}: ${auditLog.action} on ${auditLog.resource} by ${auditLog.userId}`);
+  }
+
+  async getAuditLogs(filters: any): Promise<any[]> {
+    // For in-memory storage, return empty array
+    // In a real implementation, this would query the database
+    return [];
+  }
+
+  // MFA stub implementations
+  async storeMFASetup(userId: string, mfaData: any): Promise<void> {
+    console.log(`[MFA] Setup initiated for user ${userId}`);
+  }
+
+  async getMFASetup(userId: string): Promise<any> {
+    return null;
+  }
+
+  async getMFAData(userId: string): Promise<any> {
+    return null;
+  }
+
+  async completeMFASetup(userId: string): Promise<void> {
+    console.log(`[MFA] Setup completed for user ${userId}`);
+  }
+
+  async disableMFA(userId: string): Promise<void> {
+    console.log(`[MFA] Disabled for user ${userId}`);
+  }
+
+  async removeBackupCode(userId: string, code: string): Promise<void> {
+    console.log(`[MFA] Backup code removed for user ${userId}`);
+  }
+
+  // Trading limits stub implementations
+  async getUserTradingLimits(userId: string): Promise<any> {
+    return null;
+  }
+
+  async setUserTradingLimits(userId: string, limits: any): Promise<void> {
+    console.log(`[TRADING] Limits updated for user ${userId}`, limits);
+  }
+
+  async getDailyTrades(userId: string): Promise<any[]> {
+    return [];
+  }
+
+  async recordTrade(tradeData: any): Promise<void> {
+    console.log(`[TRADING] Trade recorded:`, tradeData);
   }
 }
 
