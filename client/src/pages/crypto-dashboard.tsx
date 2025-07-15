@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radar, CheckCircle, Zap } from "lucide-react";
+import { Radar, Eye, Zap, TrendingUp, Search } from "lucide-react";
 import CryptoRadar from "@/components/trading/crypto-radar";
 import CryptoValidation from "@/components/trading/crypto-validation";
-import AutomatedTrading from "@/components/trading/automated-trading";
+import { AutomatedTrading } from "@/components/trading/automated-trading";
+import { StrategySearch } from "@/components/trading/strategy-search";
 
 export default function CryptoDashboard() {
   const [selectedCoinId, setSelectedCoinId] = useState<number | null>(null);
@@ -32,7 +32,7 @@ export default function CryptoDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="discover" className="flex items-center gap-2">
             <Radar className="h-4 w-4" />
             Discover
@@ -45,6 +45,10 @@ export default function CryptoDashboard() {
             <Zap className="h-4 w-4" />
             Trade
           </TabsTrigger>
+          <TabsTrigger value="strategies" className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              Strategy Search
+            </TabsTrigger>
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
@@ -88,6 +92,10 @@ export default function CryptoDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="strategies" className="space-y-6">
+            <StrategySearch />
+          </TabsContent>
       </Tabs>
 
       <div className="mt-8 text-center">

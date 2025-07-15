@@ -81,4 +81,18 @@ export const tradingApi = {
   cancelAutomatedTrade: (tradeId: number) => apiRequest<void>(`/trading/automated/${tradeId}`, {
     method: 'DELETE',
   }),
+
+  // Trading strategy search endpoints
+  searchTradingStrategies: (query: string) => apiRequest<any[]>(`/strategies/search?query=${encodeURIComponent(query)}`),
+  searchByStrategyType: (strategyType: string, riskLevel?: string) => {
+    const params = new URLSearchParams({ strategy_type: strategyType });
+    if (riskLevel) params.append('risk_level', riskLevel);
+    return apiRequest<any[]>(`/strategies/search?${params.toString()}`);
+  },
+  getRecommendedStrategies: (marketCondition?: string, experienceLevel?: string) => {
+    const params = new URLSearchParams();
+    if (marketCondition) params.append('market_condition', marketCondition);
+    if (experienceLevel) params.append('experience_level', experienceLevel);
+    return apiRequest<any[]>(`/strategies/recommended?${params.toString()}`);
+  },
 };

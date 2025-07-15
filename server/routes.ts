@@ -8,12 +8,13 @@ import { AIService } from "./aiService";
 import { rateLimiters } from "./rateLimiter";
 import { MFAService } from "./mfaService";
 import { TradingLimitsService } from "./tradingLimits";
-import { AuditLogger, auditMiddleware } from "./auditLogger";
+import { AuditLogger } from './auditLogger';
+import { algoliaMCP } from './mcpService';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
-  
+
   // Apply audit middleware to all routes
   app.use('/api', auditMiddleware);
 
@@ -22,15 +23,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.claims?.sub;
       const userEmail = req.user?.claims?.email;
-      
+
       if (!userId || !userEmail) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       const mfaSetup = await MFAService.setupMFA(userId, userEmail);
-      
+
       await AuditLogger.logAction(userId, 'MFA_SETUP_INITIATED', 'AUTH', {}, req, 'MEDIUM');
-      
+
       res.json({
         qrCodeUrl: mfaSetup.qrCodeUrl,
         backupCodes: mfaSetup.backupCodes,
@@ -45,13 +46,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.claims?.sub;
       const { token } = req.body;
-      
+
       if (!userId || !token) {
         return res.status(400).json({ message: "Missing required data" });
       }
-      
+
       const isSetup = await MFAService.completeMFASetup(userId, token);
-      
+
       if (isSetup) {
         await AuditLogger.logAction(userId, 'MFA_SETUP_COMPLETED', 'AUTH', {}, req, 'HIGH');
         res.json({ message: "MFA setup completed successfully" });
@@ -80,10 +81,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.claims?.sub;
       const limits = req.body;
-      
+
       await TradingLimitsService.setUserLimits(userId, limits);
       await AuditLogger.logAction(userId, 'TRADING_LIMITS_UPDATED', 'SETTINGS', limits, req, 'MEDIUM');
-      
+
       res.json({ message: "Trading limits updated successfully" });
     } catch (error) {
       console.error("Error updating trading limits:", error);
@@ -98,12 +99,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
-      
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -433,10 +434,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.claims?.sub || 1; // MVP fallback
       const tradeData = { ...req.body, userId };
-      
+
       const trade = await storage.createAutomatedTrade(tradeData);
       await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_CREATED', 'TRADING', { tradeId: trade.id }, req, 'HIGH');
-      
+
       res.status(201).json(trade);
     } catch (error) {
       res.status(500).json({ error: "Failed to create automated trade" });
@@ -447,12 +448,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tradeId = parseInt(req.params.tradeId);
       const userId = req.user?.claims?.sub || 1; // MVP fallback
-      
+
       const updatedTrade = await storage.updateAutomatedTrade(tradeId, userId, req.body);
       if (!updatedTrade) {
         return res.status(404).json({ error: "Trade not found" });
       }
-      
+
       await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_UPDATED', 'TRADING', { tradeId }, req, 'MEDIUM');
       res.json(updatedTrade);
     } catch (error) {
@@ -464,12 +465,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tradeId = parseInt(req.params.tradeId);
       const userId = req.user?.claims?.sub || 1; // MVP fallback
-      
+
       const cancelled = await storage.cancelAutomatedTrade(tradeId, userId);
       if (!cancelled) {
         return res.status(404).json({ error: "Trade not found" });
       }
-      
+
       await AuditLogger.logAction(userId, 'AUTOMATED_TRADE_CANCELLED', 'TRADING', { tradeId }, req, 'MEDIUM');
       res.json({ success: true });
     } catch (error) {
