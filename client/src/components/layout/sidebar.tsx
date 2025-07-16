@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   Brain, 
@@ -36,7 +35,7 @@ function NavigationContent() {
           <span className="sm:hidden">AI Trading</span>
         </h1>
       </div>
-      
+
       {/* Navigation */}
       <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2">
         {navigationItems.map((item) => {
@@ -60,7 +59,7 @@ function NavigationContent() {
           );
         })}
       </nav>
-      
+
       {/* User Profile */}
       <div className="p-3 sm:p-4 border-t border-border">
         <div className="flex items-center space-x-3">
@@ -78,37 +77,30 @@ function NavigationContent() {
 }
 
 export function Sidebar() {
-  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
-      <>
-        {/* Mobile hamburger trigger */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="fixed top-4 left-4 z-50 bg-background border border-border shadow-lg lg:hidden"
-            >
-              <Menu className="w-5 h-5" />
-              <span className="sr-only">Open navigation menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent 
-            side="left" 
-            className="w-80 p-0 bg-trading-surface border-r border-border"
-          >
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navigation Menu</SheetTitle>
-            </SheetHeader>
-            <div className="flex flex-col h-full">
-              <NavigationContent />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-50 bg-background border border-border shadow-lg lg:hidden">
+            <Menu className="w-5 h-5" />
+            <span className="sr-only">Open navigation menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent 
+          side="left" 
+          className="w-80 p-0 bg-trading-surface border-r border-border"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation Menu</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col h-full">
+            <NavigationContent />
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 
@@ -123,7 +115,7 @@ export function Sidebar() {
 // Export mobile menu trigger for use in topbar
 export function MobileMenuTrigger() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
