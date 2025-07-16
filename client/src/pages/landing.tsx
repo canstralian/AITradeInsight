@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Zap, Target, TrendingUp, Activity, Shield, Clock, BarChart3, Smartphone, Globe } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   const features = [
     {
@@ -124,7 +126,7 @@ export default function Landing() {
             </button>
             <Button 
               className="hidden md:block bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2 rounded-full font-medium hover:opacity-90 transition"
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => setLocation('/dashboard')}
             >
               Get Started
             </Button>
@@ -140,7 +142,7 @@ export default function Landing() {
                 <a href="#contact" className="hover:text-purple-400 transition">Contact</a>
                 <Button 
                   className="bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-2 rounded-full font-medium hover:opacity-90 transition text-center mt-2"
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => setLocation('/dashboard')}
                 >
                   Get Started
                 </Button>
@@ -161,7 +163,7 @@ export default function Landing() {
           </p>
           <Button 
             className="inline-block bg-purple-600 hover:bg-purple-700 px-8 py-3 rounded-full font-semibold text-lg transition glow"
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => setLocation('/dashboard')}
           >
             Start Arbitraging Now
           </Button>
@@ -283,7 +285,7 @@ export default function Landing() {
                   </ul>
                   <Button 
                     className={`w-full ${plan.popular ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-700 hover:bg-gray-600'}`}
-                    onClick={() => window.location.href = '/dashboard'}
+                    onClick={() => setLocation('/dashboard')}
                   >
                     Get Started
                   </Button>
@@ -303,7 +305,7 @@ export default function Landing() {
           </p>
           <Button 
             className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 rounded-full font-semibold text-lg hover:opacity-90 transition glow"
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => setLocation('/dashboard')}
           >
             Start Your Free Trial
           </Button>

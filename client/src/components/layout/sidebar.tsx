@@ -14,17 +14,20 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useLocation } from "wouter";
 
 const navigationItems = [
-  { icon: Home, label: "Dashboard", href: "#", active: true },
-  { icon: Brain, label: "AI Predictions", href: "#" },
-  { icon: TrendingUp, label: "Trading Signals", href: "#" },
-  { icon: Newspaper, label: "Market Sentiment", href: "#" },
-  { icon: Star, label: "Watchlist", href: "#" },
-  { icon: Wallet, label: "Portfolio", href: "#" },
+  { icon: Home, label: "Dashboard", href: "/dashboard", active: true },
+  { icon: Brain, label: "AI Predictions", href: "/dashboard#ai-predictions" },
+  { icon: TrendingUp, label: "Trading Signals", href: "/dashboard#trading-signals" },
+  { icon: Newspaper, label: "Market Sentiment", href: "/dashboard#market-sentiment" },
+  { icon: Star, label: "Watchlist", href: "/dashboard#watchlist" },
+  { icon: Wallet, label: "Portfolio", href: "/dashboard#portfolio" },
 ];
 
 function NavigationContent() {
+  const [location, setLocation] = useLocation();
+  
   return (
     <>
       {/* Header */}
@@ -40,14 +43,28 @@ function NavigationContent() {
       <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
+          const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
           return (
-            <a 
+            <button 
               key={item.label}
-              href={item.href} 
+              onClick={() => {
+                if (item.href.includes('#')) {
+                  const [path, hash] = item.href.split('#');
+                  setLocation(path);
+                  setTimeout(() => {
+                    const element = document.getElementById(hash);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }, 100);
+                } else {
+                  setLocation(item.href);
+                }
+              }}
               className={`
-                flex items-center space-x-3 px-3 py-3 sm:py-2 rounded-lg transition-colors
+                w-full flex items-center space-x-3 px-3 py-3 sm:py-2 rounded-lg transition-colors
                 touch-manipulation min-h-[48px] sm:min-h-[40px]
-                ${item.active 
+                ${isActive 
                   ? "bg-primary/10 text-primary border border-primary/20" 
                   : "text-trading-neutral hover:bg-trading-surface hover:text-foreground"
                 }
@@ -55,7 +72,7 @@ function NavigationContent() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="font-medium">{item.label}</span>
-            </a>
+            </button>
           );
         })}
       </nav>

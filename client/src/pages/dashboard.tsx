@@ -87,13 +87,23 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AIPredictions />
-              <TradingSignals />
+              <div id="ai-predictions">
+                <AIPredictions />
+              </div>
+              <div id="trading-signals">
+                <TradingSignals />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div id="market-sentiment" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <MarketSentiment />
-              <Watchlist />
+              <div id="watchlist">
+                <Watchlist />
+              </div>
+            </div>
+
+            <div id="portfolio">
+              <PortfolioOverview />
             </div>
           </div>
         </main>
