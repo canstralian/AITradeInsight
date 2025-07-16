@@ -8,7 +8,7 @@ import { tradingApi } from "@/lib/trading-api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileMenuTrigger } from "./sidebar";
 
-export function TopBar() {
+export default function TopBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const isMobile = useIsMobile();

@@ -12,8 +12,8 @@ import { MarketSentiment } from "@/components/trading/market-sentiment";
 import { PortfolioOverview } from "@/components/trading/portfolio-overview";
 import { Watchlist } from "@/components/trading/watchlist";
 import { StockRecommendations } from "@/components/trading/stock-recommendations";
-import Sidebar from "@/components/navigation/sidebar";
-import Topbar from "@/components/navigation/topbar";
+import Sidebar from "@/components/layout/sidebar";
+import Topbar from "@/components/layout/topbar";
 import PriceChart from "@/components/trading/price-chart";
 
 export default function Dashboard() {

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";
 
-export function PriceChart() {
+export default function PriceChart() {
   const [selectedStock, setSelectedStock] = useState("AAPL");
   const [timeframe, setTimeframe] = useState("1D");
   const chartRef = useRef<HTMLCanvasElement>(null);

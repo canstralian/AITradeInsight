@@ -107,7 +107,7 @@
 
   .card-hover {
     @apply transition-all duration-300 ease-in-out;
-    @apply hover:border-primary/50 hover:shadow-lg;
+    @apply hover:border-primary hover:shadow-lg;
   }
 
   .card-hover:hover {

@@ -76,7 +76,7 @@ function NavigationContent() {
   );
 }
 
-export function Sidebar() {
+export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 
