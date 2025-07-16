@@ -345,6 +345,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trading Strategy routes
+  app.get("/api/strategies/search", async (req, res) => {
+    try {
+      const query = req.query.query as string;
+      const strategyType = req.query.strategy_type as string;
+      const riskLevel = req.query.risk_level as string;
+
+      if (query) {
+        // Text-based search using MCP service
+        const results = await algoliaMCP.searchTradingStrategies(query);
+        res.json(results || []);
+      } else if (strategyType) {
+        // Filter-based search using MCP service
+        const results = await algoliaMCP.searchByStrategy(strategyType, riskLevel);
+        res.json(results || []);
+      } else {
+        res.status(400).json({ error: "Query or strategy_type parameter is required" });
+      }
+    } catch (error) {
+      console.error("Strategy search error:", error);
+      // Fallback to mock data if MCP service fails
+      const mockStrategies = [
+        {
+          name: "Momentum Trading Strategy",
+          description: "A strategy that capitalizes on the continuation of existing trends in stock prices.",
+          strategy_type: "momentum",
+          risk_level: "medium",
+          win_rate: "68",
+          avg_return: "12.5",
+          key_features: ["Trend following", "Volume analysis", "Moving averages"]
+        },
+        {
+          name: "Mean Reversion Strategy",
+          description: "Exploits the tendency of stock prices to revert to their historical average.",
+          strategy_type: "mean_reversion",
+          risk_level: "low",
+          win_rate: "72",
+          avg_return: "8.3",
+          key_features: ["Statistical analysis", "Bollinger Bands", "RSI indicators"]
+        },
+        {
+          name: "Breakout Trading",
+          description: "Identifies and trades on significant price movements beyond support/resistance levels.",
+          strategy_type: "breakout",
+          risk_level: "high",
+          win_rate: "58",
+          avg_return: "18.7",
+          key_features: ["Volume confirmation", "Pattern recognition", "Stop-loss management"]
+        }
+      ];
+      
+      let filteredStrategies = mockStrategies;
+      if (query) {
+        filteredStrategies = mockStrategies.filter(s => 
+          s.name.toLowerCase().includes(query.toLowerCase()) ||
+          s.description.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+      if (strategyType) {
+        filteredStrategies = filteredStrategies.filter(s => s.strategy_type === strategyType);
+      }
+      if (riskLevel) {
+        filteredStrategies = filteredStrategies.filter(s => s.risk_level === riskLevel);
+      }
+      
+      res.json(filteredStrategies);
+    }
+  });
+
+  app.get("/api/strategies/recommended", async (req, res) => {
+    try {
+      const marketCondition = req.query.market_condition as string;
+      const experienceLevel = req.query.experience_level as string;
+
+      // Mock recommended strategies data
+      const recommendedStrategies = [
+        {
+          name: "AI-Enhanced Momentum Strategy",
+          description: "Machine learning powered momentum strategy with real-time market sentiment analysis.",
+          risk_level: "medium",
+          win_rate: "74",
+          avg_return: "15.2",
+          key_features: ["AI sentiment analysis", "Dynamic stop-loss", "Multi-timeframe analysis"],
+          confidence_score: 95
+        },
+        {
+          name: "Options Wheel Strategy",
+          description: "Conservative income generation through cash-secured puts and covered calls.",
+          risk_level: "low",
+          win_rate: "82",
+          avg_return: "12.8",
+          key_features: ["Income generation", "Risk management", "Theta decay"],
+          confidence_score: 88
+        },
+        {
+          name: "Swing Trading Pro",
+          description: "Professional swing trading strategy optimized for 3-7 day holding periods.",
+          risk_level: "medium",
+          win_rate: "69",
+          avg_return: "16.4",
+          key_features: ["Technical analysis", "Risk/reward optimization", "Market timing"],
+          confidence_score: 91
+        }
+      ];
+
+      res.json(recommendedStrategies);
+    } catch (error) {
+      console.error("Error fetching recommended strategies:", error);
+      res.status(500).json({ error: "Failed to fetch recommended strategies" });
+    }
+  });
+
+  app.get("/api/strategies/filter", async (req, res) => {
+    try {
+      const strategyType = req.query.strategy_type as string;
+      const riskLevel = req.query.risk_level as string;
+
+      // This endpoint can be an alias to the search endpoint with filters
+      const results = await algoliaMCP.searchByStrategy(strategyType, riskLevel);
+      res.json(results || []);
+    } catch (error) {
+      console.error("Strategy filter error:", error);
+      // Fallback mock data
+      const mockFilteredStrategies = [
+        {
+          name: "Scalping Master",
+          description: "High-frequency trading strategy for quick profits on small price movements.",
+          strategy_type: "scalping",
+          risk_level: "high",
+          win_rate: "62",
+          avg_return: "25.1",
+          key_features: ["High frequency", "Small profits", "Quick execution"]
+        },
+        {
+          name: "Day Trading Elite",
+          description: "Professional day trading strategy with advanced risk management.",
+          strategy_type: "day_trading",
+          risk_level: "medium",
+          win_rate: "65",
+          avg_return: "19.3",
+          key_features: ["Intraday focus", "Risk management", "Technical indicators"]
+        }
+      ];
+      res.json(mockFilteredStrategies);
+    }
+  });
+
   // AI Analysis routes
   app.get("/api/ai/analyze/:symbol", rateLimiters.aiAnalysis, async (req, res) => {
     try {

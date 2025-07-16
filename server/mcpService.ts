@@ -36,6 +36,10 @@ export class AlgoliaMCPService {
       await this.connect();
     }
 
+    if (!this.client) {
+      throw new Error("Failed to connect to Algolia MCP service");
+    }
+
     try {
       const result = await this.client.callTool({
         name: "algolia_search",
@@ -58,13 +62,21 @@ export class AlgoliaMCPService {
   }
 
   async searchByStrategy(strategyType: string, riskLevel?: string) {
+    if (!this.client) {
+      await this.connect();
+    }
+
+    if (!this.client) {
+      throw new Error("Failed to connect to Algolia MCP service");
+    }
+
     const filters = [`strategy_type:${strategyType}`];
     if (riskLevel) {
       filters.push(`risk_level:${riskLevel}`);
     }
 
     try {
-      const result = await this.client?.callTool({
+      const result = await this.client.callTool({
         name: "algolia_search",
         arguments: {
           index_name: "trading_strategies",
