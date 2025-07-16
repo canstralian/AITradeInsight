@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge"; // Added Badge import
 
 export function AiPredictions() {
   const [selectedStockId, setSelectedStockId] = useState<number>(1);
@@ -24,9 +25,9 @@ export function AiPredictions() {
 
   if (isLoading) {
     return (
-      <Card className="trading-card">
+      <Card className="trading-card card-hover bg-card/80 border-border/50">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">AI Price Prediction</CardTitle>
+          <CardTitle className="text-lg font-semibold gradient-text">AI Price Prediction</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -45,10 +46,10 @@ export function AiPredictions() {
   }
 
   return (
-    <Card className="trading-card">
+    <Card className="trading-card card-hover bg-card/80 border-border/50">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 gradient-text">
             <Brain className="w-5 h-5 text-primary" />
             AI Price Prediction
           </CardTitle>
@@ -87,7 +88,7 @@ export function AiPredictions() {
                 style={{ width: `${selectedPrediction.confidence}%` }}
               />
             </div>
-            <div className="text-xs text-trading-neutral text-center">
+            <div className="text-xs text-trading-neutral text-center text-primary"> {/* Added text-primary class */}
               {selectedPrediction.confidence}% Confidence Score
             </div>
           </div>
