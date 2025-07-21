@@ -59,6 +59,9 @@ export const tradingApi = {
   // Recommendations endpoint
   getRecommendations: () => apiRequest<any[]>('/recommendations'),
   
+  // Trading strategy endpoints
+  getTradingStrategy: (strategyId: number) => apiRequest<any>(`/strategies/${strategyId}`),
+  
   // Chart data endpoint
   getChartData: (symbol: string) => apiRequest<any[]>(`/chart/${symbol}`),
   

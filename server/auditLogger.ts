@@ -135,10 +135,11 @@ export const auditMiddleware = (req: any, res: any, next: any) => {
   
   res.send = function(data: any) {
     const user = req.user;
-    if (user) {
+    // Only log authenticated users and avoid logging auth failures repeatedly
+    if (user && user.claims?.sub && req.path !== '/api/auth/user') {
       const severity = res.statusCode >= 400 ? 'MEDIUM' : 'LOW';
       AuditLogger.logAction(
-        user.claims?.sub || 'unknown',
+        user.claims.sub,
         req.method,
         req.path,
         {

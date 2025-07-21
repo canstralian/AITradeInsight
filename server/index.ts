@@ -76,7 +76,9 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 server.listen(PORT, '0.0.0.0', () => {
   const timestamp = new Date().toLocaleTimeString();
-  console.log(`${timestamp} [express] serving on port ${PORT}`);
+  const env = process.env.NODE_ENV || 'development';
+  console.log(`${timestamp} [express] serving on port ${PORT} (${env})`);
+  console.log(`${timestamp} [express] server accessible at http://0.0.0.0:${PORT}`);
 });
 
 // Graceful shutdown
