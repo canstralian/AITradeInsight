@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { rateLimiters } from './rateLimiter.js';
 import { registerRoutes } from './routes.js';
-import { setupVite, serveStatic } from './vite.js';
+import { setupVite, serveStatic } from './viteSetup.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
