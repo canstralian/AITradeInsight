@@ -1,97 +1,117 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import { rateLimiters } from './rateLimiter';
-import { registerRoutes } from './routes';
-import { setupVite, serveStatic } from './viteSetup';
+import express from "express";
+import cors from "cors";
+import { setupVite, serveStatic } from "./vite";
+import { createServer } from "http";
+import { setupAuth } from "./auth";
+import { setupRoutes } from "./routes";
+
+// Import middleware
+import { 
+  errorHandler, 
+  notFoundHandler, 
+  requestIdMiddleware,
+  handleUnhandledRejections,
+  handleUncaughtExceptions 
+} from "./middleware/errorHandler";
+import { requestLogger, logger } from "./middleware/logger";
+import { 
+  securityHeaders, 
+  corsOptions, 
+  generalRateLimit, 
+  sanitizeRequest,
+  apiSecurityHeaders 
+} from "./middleware/security";
+
+// Handle unhandled rejections and exceptions
+handleUnhandledRejections();
+handleUncaughtExceptions();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const server = createServer(app);
 
-// Trust proxy for rate limiting (required in Replit environment)
+// Trust proxy if behind reverse proxy (Replit, nginx, etc.)
 app.set('trust proxy', 1);
 
+// Request ID middleware (must be first)
+app.use(requestIdMiddleware);
+
+// Request logging
+app.use(requestLogger);
+
 // Security middleware
-if (process.env.NODE_ENV === 'production') {
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:"],
-      },
-    },
-  }));
-} else {
-  // Disable CSP in development for Vite HMR
-  app.use(helmet({
-    contentSecurityPolicy: false,
-  }));
-}
+app.use(securityHeaders);
+app.use(cors(corsOptions));
 
-// Apply enhanced rate limiting only in production
-if (process.env.NODE_ENV === 'production') {
-  app.use('/api', rateLimiters.general);
-}
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : true, // Allow all origins in development
-  credentials: true,
-}));
+// Rate limiting
+app.use(generalRateLimit);
 
+// Request parsing with size limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
+// Request sanitization
+app.use(sanitizeRequest);
+
+// API security headers for API routes
+app.use('/api', apiSecurityHeaders);
+
+// Health check endpoint (before auth)
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
+    version: process.env.npm_package_version || '1.0.0',
   });
 });
 
-// Set up routes and get HTTP server
-const server = await registerRoutes(app);
+// Setup authentication and routes
+setupAuth(app);
+setupRoutes(app);
 
-// Development middleware
-if (process.env.NODE_ENV === 'development') {
-  await setupVite(app, server);
-} else {
+// Setup Vite or static serving
+if (process.env.NODE_ENV === "production") {
   serveStatic(app);
+} else {
+  setupVite(app, server);
 }
 
-// Global error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-  });
-});
+// 404 handler (must be before error handler)
+app.use(notFoundHandler);
 
-server.listen(PORT, '0.0.0.0', () => {
-  const timestamp = new Date().toLocaleTimeString();
-  const env = process.env.NODE_ENV || 'development';
-  console.log(`${timestamp} [express] serving on port ${PORT} (${env})`);
-  console.log(`${timestamp} [express] server accessible at http://0.0.0.0:${PORT}`);
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
+const PORT = process.env.PORT || 5000;
+
+// Graceful shutdown handling
+const gracefulShutdown = () => {
+  logger.info('Received shutdown signal, closing server gracefully...');
+
   server.close(() => {
-    console.log('Process terminated');
+    logger.info('Server closed successfully');
+    process.exit(0);
   });
-});
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
+  // Force close after 30 seconds
+  setTimeout(() => {
+    logger.error('Forcing server shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+server.listen(PORT, "0.0.0.0", () => {
+  const mode = process.env.NODE_ENV === "production" ? "production" : "development";
+  logger.info(`Server starting`, {
+    port: PORT,
+    mode,
+    nodeVersion: process.version,
+    platform: process.platform,
   });
+
+  console.log(`[express] serving on port ${PORT} (${mode})`);
+  console.log(`[express] server accessible at http://0.0.0.0:${PORT}`);
 });
