@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { rateLimiters } from './rateLimiter.js';
-import { registerRoutes } from './routes.js';
-import { setupVite, serveStatic } from './viteSetup.js';
+import { rateLimiters } from './rateLimiter';
+import { registerRoutes } from './routes';
+import { setupVite, serveStatic } from './viteSetup';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
