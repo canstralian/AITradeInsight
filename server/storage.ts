@@ -424,29 +424,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { DatabaseStorage } from './databaseStorage';
-
-const databaseStorage = new DatabaseStorage();
-
-// Add MFA and security-related methods to storage interface
-export interface StorageInterface extends typeof databaseStorage {
-  // MFA methods
-  storeMFASetup(userId: string, mfaData: any): Promise<void>;
-  getMFASetup(userId: string): Promise<any>;
-  getMFAData(userId: string): Promise<any>;
-  completeMFASetup(userId: string): Promise<void>;
-  disableMFA(userId: string): Promise<void>;
-  removeBackupCode(userId: string, code: string): Promise<void>;
-
-  // Trading limits methods
-  getUserTradingLimits(userId: string): Promise<any>;
-  setUserTradingLimits(userId: string, limits: any): Promise<void>;
-  getDailyTrades(userId: string): Promise<any[]>;
-  recordTrade(tradeData: any): Promise<void>;
-
-  // Audit logging methods
-  saveAuditLog(auditLog: any): Promise<void>;
-  getAuditLogs(filters: any): Promise<any[]>;
-}
-
-export const storage: StorageInterface = databaseStorage as StorageInterface;
+// For now, use MemStorage for development
+export const storage = new MemStorage();

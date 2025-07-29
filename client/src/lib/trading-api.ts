@@ -99,61 +99,6 @@ class TradingApi {
       throw new Error(handleApiError(error));
     }
   }
-  private async fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-    const token = localStorage.getItem('authToken');
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    };
-
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  async getStocks() {
-    try {
-      return await this.fetchWithAuth('/api/stocks');
-    } catch (error) {
-      console.warn('API not available, using mock data:', error);
-      return mockStocks;
-    }
-  }
-
-  async getRecommendations() {
-    try {
-      return await this.fetchWithAuth('/api/recommendations');
-    } catch (error) {
-      console.warn('API not available, using mock data:', error);
-      return mockRecommendations;
-    }
-  }
-
-  async getPortfolio() {
-    try {
-      return await this.fetchWithAuth('/api/portfolio');
-    } catch (error) {
-      console.warn('API not available, using mock data:', error);
-      return {
-        totalValue: 125432.50,
-        todayChange: 2847.32,
-        todayChangePercent: 2.32,
-        positions: [
-          { symbol: "AAPL", shares: 50, value: 8771.50, change: 107.50 },
-          { symbol: "MSFT", shares: 25, value: 9471.25, change: 141.75 },
-          { symbol: "GOOGL", shares: 30, value: 3946.80, change: -36.90 }
-        ]
-      };
-    }
-  }
 }
 
 export const tradingApi = new TradingApi();

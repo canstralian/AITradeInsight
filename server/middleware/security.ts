@@ -64,7 +64,7 @@ export const apiRateLimit = createRateLimit({
 
 // Security headers configuration
 export const securityHeaders = helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: process.env.NODE_ENV === 'development' ? false : {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
@@ -87,6 +87,8 @@ export const corsOptions = {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
       'http://localhost:3000',
       'http://localhost:5000',
+      'http://127.0.0.1:5000',
+      'http://0.0.0.0:5000'
     ];
     
     // Allow requests with no origin (mobile apps, etc.)

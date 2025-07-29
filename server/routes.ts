@@ -347,11 +347,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Trading Strategy routes
   app.get("/api/strategies/search", async (req, res) => {
+    const query = req.query.query as string;
+    const strategyType = req.query.strategy_type as string;
+    const riskLevel = req.query.risk_level as string;
+    
     try {
-      const query = req.query.query as string;
-      const strategyType = req.query.strategy_type as string;
-      const riskLevel = req.query.risk_level as string;
-
       if (query) {
         // Text-based search using MCP service
         const results = await algoliaMCP.searchTradingStrategies(query);

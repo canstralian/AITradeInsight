@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Radar, Eye, Zap, TrendingUp, Search } from "lucide-react";
 import CryptoRadar from "@/components/trading/crypto-radar";
-import CryptoValidation from "@/components/trading/crypto-validation";
+import CryptoValidation from "@/components/trading/crypto-validation-fixed";
 import { AutomatedTrading } from "@/components/trading/automated-trading";
 import { StrategySearch } from "@/components/trading/strategy-search";
 
