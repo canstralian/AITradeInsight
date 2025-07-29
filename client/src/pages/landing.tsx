@@ -305,7 +305,7 @@ export default function Landing() {
           </p>
           <Button 
             className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 rounded-full font-semibold text-lg hover:opacity-90 transition glow"
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation('/get-started')}
           >
             Start Your Free Trial
           </Button>
