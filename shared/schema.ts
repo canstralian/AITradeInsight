@@ -228,6 +228,99 @@ export const auditLogsTable = pgTable('audit_logs', {
   timestamp: timestamp('timestamp').defaultNow(),
 });
 
+// Broker Integration Tables
+export const brokerAccountsTable = pgTable('broker_accounts', {
+  id: varchar('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  brokerId: varchar('broker_id').notNull(),
+  accountId: varchar('account_id').notNull(),
+  accountName: varchar('account_name').notNull(),
+  accountType: varchar('account_type').notNull(),
+  isActive: varchar('is_active').default('true'),
+  balance: numeric('balance', { precision: 15, scale: 2 }).default('0'),
+  buyingPower: numeric('buying_power', { precision: 15, scale: 2 }).default('0'),
+  credentials: jsonb('credentials'),
+  lastSync: timestamp('last_sync').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const brokerPositionsTable = pgTable('broker_positions', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  accountId: varchar('account_id').notNull(),
+  symbol: varchar('symbol').notNull(),
+  quantity: numeric('quantity', { precision: 15, scale: 8 }).notNull(),
+  avgPrice: numeric('avg_price', { precision: 15, scale: 8 }).notNull(),
+  currentPrice: numeric('current_price', { precision: 15, scale: 8 }).notNull(),
+  marketValue: numeric('market_value', { precision: 15, scale: 2 }).notNull(),
+  unrealizedPL: numeric('unrealized_pl', { precision: 15, scale: 2 }).notNull(),
+  unrealizedPLPercent: numeric('unrealized_pl_percent', { precision: 10, scale: 4 }).notNull(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const brokerTradesTable = pgTable('broker_trades', {
+  id: varchar('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  accountId: varchar('account_id').notNull(),
+  symbol: varchar('symbol').notNull(),
+  side: varchar('side').notNull(),
+  quantity: numeric('quantity', { precision: 15, scale: 8 }).notNull(),
+  price: numeric('price', { precision: 15, scale: 8 }).notNull(),
+  orderType: varchar('order_type').notNull(),
+  status: varchar('status').notNull(),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+
+// Calendar Integration Tables
+export const calendarPreferencesTable = pgTable('calendar_preferences', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull().unique(),
+  earningsAlerts: varchar('earnings_alerts').default('true'),
+  economicAlerts: varchar('economic_alerts').default('true'),
+  dividendAlerts: varchar('dividend_alerts').default('true'),
+  alertTiming: integer('alert_timing').default(1),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const calendarEventsTable = pgTable('calendar_events', {
+  id: varchar('id').primaryKey(),
+  type: varchar('type').notNull(), // 'earnings', 'economic', 'dividend'
+  symbol: varchar('symbol'),
+  title: varchar('title').notNull(),
+  description: text('description'),
+  eventDate: timestamp('event_date').notNull(),
+  importance: varchar('importance').default('MEDIUM'),
+  data: jsonb('data'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Reporting Tables
+export const reportConfigsTable = pgTable('report_configs', {
+  id: varchar('id').primaryKey(),
+  userId: varchar('user_id').notNull(),
+  name: varchar('name').notNull(),
+  type: varchar('type').notNull(),
+  frequency: varchar('frequency').notNull(),
+  format: varchar('format').notNull(),
+  sections: jsonb('sections'),
+  delivery: jsonb('delivery'),
+  isActive: varchar('is_active').default('true'),
+  lastGenerated: timestamp('last_generated'),
+  nextScheduled: timestamp('next_scheduled'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const reportHistoryTable = pgTable('report_history', {
+  id: serial('id').primaryKey(),
+  reportId: varchar('report_id').notNull(),
+  userId: varchar('user_id').notNull(),
+  generatedAt: timestamp('generated_at').defaultNow(),
+  format: varchar('format').notNull(),
+  fileSize: integer('file_size'),
+  status: varchar('status').notNull(),
+  errorMessage: text('error_message'),
+});
+
 // Additional schemas for API responses
 export const StockSchema = z.object({
   id: z.number().positive(),

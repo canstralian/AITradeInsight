@@ -347,11 +347,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Trading Strategy routes
   app.get("/api/strategies/search", async (req, res) => {
-    const query = req.query.query as string;
-    const strategyType = req.query.strategy_type as string;
-    const riskLevel = req.query.risk_level as string;
-    
     try {
+      const query = req.query.query as string;
+      const strategyType = req.query.strategy_type as string;
+      const riskLevel = req.query.risk_level as string;
+
       if (query) {
         // Text-based search using MCP service
         const results = await algoliaMCP.searchTradingStrategies(query);
@@ -516,6 +516,225 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ sentiment });
     } catch (error) {
       res.status(500).json({ error: "Failed to generate market sentiment" });
+    }
+  });
+
+  // Broker Integration routes
+  app.post("/api/brokers/connect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { brokerId, apiKey, apiSecret, accountId, accountName } = req.body;
+
+      const { BrokerIntegrationService } = await import('./brokerIntegration');
+      const account = await BrokerIntegrationService.connectBrokerAccount(userId, {
+        brokerId,
+        apiKey,
+        apiSecret,
+        accountId,
+        accountName
+      });
+
+      await AuditLogger.logAction(userId, 'BROKER_CONNECTED', 'INTEGRATION', { brokerId, accountId }, req, 'HIGH');
+      res.json(account);
+    } catch (error) {
+      console.error('Broker connection error:', error);
+      res.status(500).json({ error: "Failed to connect broker account" });
+    }
+  });
+
+  app.get("/api/brokers/accounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const accounts = await storage.getBrokerAccounts(userId);
+      res.json(accounts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch broker accounts" });
+    }
+  });
+
+  app.post("/api/brokers/sync/:accountId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { accountId } = req.params;
+
+      const { BrokerIntegrationService } = await import('./brokerIntegration');
+      await BrokerIntegrationService.syncBrokerAccount(userId, accountId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to sync broker account" });
+    }
+  });
+
+  app.get("/api/brokers/portfolio", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { BrokerIntegrationService } = await import('./brokerIntegration');
+      const portfolio = await BrokerIntegrationService.getConsolidatedPortfolio(userId);
+      res.json(portfolio);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch consolidated portfolio" });
+    }
+  });
+
+  app.post("/api/brokers/trade", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { accountId, symbol, side, quantity, orderType, price } = req.body;
+
+      const { BrokerIntegrationService } = await import('./brokerIntegration');
+      const trade = await BrokerIntegrationService.executeTradeOrder(userId, accountId, {
+        symbol,
+        side,
+        quantity,
+        orderType,
+        price
+      });
+
+      await AuditLogger.logAction(userId, 'TRADE_EXECUTED', 'TRADING', { symbol, side, quantity }, req, 'HIGH');
+      res.json(trade);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to execute trade" });
+    }
+  });
+
+  // Calendar Integration routes
+  app.get("/api/calendar/earnings", async (req, res) => {
+    try {
+      const startDate = new Date(req.query.start as string || new Date());
+      const endDate = new Date(req.query.end as string || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+
+      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      const earnings = await CalendarIntegrationService.getEarningsCalendar(startDate, endDate);
+      res.json(earnings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch earnings calendar" });
+    }
+  });
+
+  app.get("/api/calendar/economic", async (req, res) => {
+    try {
+      const startDate = new Date(req.query.start as string || new Date());
+      const endDate = new Date(req.query.end as string || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+
+      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      const events = await CalendarIntegrationService.getEconomicEvents(startDate, endDate);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch economic events" });
+    }
+  });
+
+  app.get("/api/calendar/dividends", async (req, res) => {
+    try {
+      const startDate = new Date(req.query.start as string || new Date());
+      const endDate = new Date(req.query.end as string || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+
+      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      const dividends = await CalendarIntegrationService.getDividendCalendar(startDate, endDate);
+      res.json(dividends);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch dividend calendar" });
+    }
+  });
+
+  app.get("/api/calendar/upcoming", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const days = parseInt(req.query.days as string) || 7;
+
+      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      const events = await CalendarIntegrationService.getUpcomingEvents(userId, days);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch upcoming events" });
+    }
+  });
+
+  app.post("/api/calendar/alerts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const preferences = req.body;
+
+      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      await CalendarIntegrationService.setupCalendarAlerts(userId, preferences);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to setup calendar alerts" });
+    }
+  });
+
+  // Reporting routes
+  app.post("/api/reports/create", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const config = req.body;
+
+      const { ReportingService } = await import('./reportingService');
+      const reportConfig = await ReportingService.createReportConfig(userId, config);
+      res.json(reportConfig);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create report configuration" });
+    }
+  });
+
+  app.get("/api/reports/generate/:reportId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { reportId } = req.params;
+
+      const { ReportingService } = await import('./reportingService');
+      const report = await ReportingService.generateReport(userId, reportId);
+
+      if (report.buffer) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="report_${reportId}.pdf"`);
+        res.send(report.buffer);
+      } else if (report.html) {
+        res.setHeader('Content-Type', 'text/html');
+        res.send(report.html);
+      } else if (report.csv) {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="report_${reportId}.csv"`);
+        res.send(report.csv);
+      } else {
+        res.json(report.data);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate report" });
+    }
+  });
+
+  app.get("/api/reports/weekly", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { ReportingService } = await import('./reportingService');
+      const report = await ReportingService.generateWeeklyPerformanceReport(userId);
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate weekly report" });
+    }
+  });
+
+  app.get("/api/reports/monthly", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { ReportingService } = await import('./reportingService');
+      const report = await ReportingService.generateMonthlyPerformanceReport(userId);
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate monthly report" });
+    }
+  });
+
+  app.get("/api/reports/digest", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { ReportingService } = await import('./reportingService');
+      const digest = await ReportingService.generateEmailDigest(userId);
+      res.setHeader('Content-Type', 'text/html');
+      res.send(digest);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate email digest" });
     }
   });
 
