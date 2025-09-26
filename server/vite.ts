@@ -6,14 +6,14 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-import { createViteServer, createLogger } from 'vite';
-import type { Express } from 'express';
-import type { Server } from 'http';
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { nanoid } from 'nanoid';
-import viteConfig from '../vite.config';
+import { createViteServer, createLogger } from "vite";
+import type { Express } from "express";
+import type { Server } from "http";
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { nanoid } from "nanoid";
+import viteConfig from "../vite.config";
 
 const viteLogger = createLogger();
 

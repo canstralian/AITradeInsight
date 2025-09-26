@@ -1,18 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function Home() {
+export function Home() {
   const { user } = useAuth();
 
   const handleLogout = () => {
-    window.location.href = '/api/logout';
+    window.location.href = "/api/logout";
   };
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    if (!firstName && !lastName) return 'U';
-    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+    if (!firstName && !lastName) return "U";
+    return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
   };
 
   return (
@@ -21,7 +27,7 @@ export default function Home() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">
-              Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
+              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}!
             </h1>
             <p className="text-muted-foreground mt-1">
               Ready to make some smart trading decisions?
@@ -49,9 +55,9 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                className="w-full" 
-                onClick={() => window.location.href = '/dashboard'}
+              <Button
+                className="w-full"
+                onClick={() => (window.location.href = "/dashboard")}
               >
                 Go to Dashboard
               </Button>
@@ -96,15 +102,14 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{user?.email || 'Not provided'}</p>
+                  <p className="font-medium">{user?.email || "Not provided"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Name</p>
                   <p className="font-medium">
-                    {user?.firstName || user?.lastName 
-                      ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                      : 'Not provided'
-                    }
+                    {user?.firstName || user?.lastName
+                      ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+                      : "Not provided"}
                   </p>
                 </div>
               </div>

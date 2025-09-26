@@ -1,11 +1,16 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { tradingApi } from "@/lib/trading-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, TrendingUp, AlertTriangle, Star } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,24 +22,33 @@ export function StrategySearch() {
   const [searchMode, setSearchMode] = useState<"text" | "filter">("text");
 
   // Text search query
-  const { data: searchResults, isLoading: isSearchLoading, refetch: refetchSearch } = useQuery({
-    queryKey: ['/api/strategies/search', searchQuery],
+  const {
+    data: searchResults,
+    isLoading: isSearchLoading,
+    refetch: refetchSearch,
+  } = useQuery({
+    queryKey: ["/api/strategies/search", searchQuery],
     queryFn: () => tradingApi.searchTradingStrategies(searchQuery),
     enabled: searchMode === "text" && searchQuery.length > 2,
   });
 
   // Filter-based search query
-  const { data: filterResults, isLoading: isFilterLoading, refetch: refetchFilter } = useQuery({
-    queryKey: ['/api/strategies/filter', strategyType, riskLevel],
+  const {
+    data: filterResults,
+    isLoading: isFilterLoading,
+    refetch: refetchFilter,
+  } = useQuery({
+    queryKey: ["/api/strategies/filter", strategyType, riskLevel],
     queryFn: () => tradingApi.searchByStrategyType(strategyType, riskLevel),
     enabled: searchMode === "filter" && !!strategyType,
   });
 
   // Recommended strategies
-  const { data: recommendedStrategies, isLoading: isRecommendedLoading } = useQuery({
-    queryKey: ['/api/strategies/recommended'],
-    queryFn: () => tradingApi.getRecommendedStrategies(),
-  });
+  const { data: recommendedStrategies, isLoading: isRecommendedLoading } =
+    useQuery({
+      queryKey: ["/api/strategies/recommended"],
+      queryFn: () => tradingApi.getRecommendedStrategies(),
+    });
 
   const handleSearch = () => {
     if (searchMode === "text") {
@@ -46,10 +60,14 @@ export function StrategySearch() {
 
   const getRiskBadgeColor = (risk: string) => {
     switch (risk?.toLowerCase()) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "low":
+        return "bg-green-100 text-green-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "high":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -89,7 +107,7 @@ export function StrategySearch() {
                 placeholder="Search trading strategies..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               />
               <Button onClick={handleSearch} disabled={searchQuery.length < 3}>
                 <Search className="h-4 w-4" />
@@ -110,7 +128,7 @@ export function StrategySearch() {
                   <SelectItem value="day_trading">Day Trading</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={riskLevel} onValueChange={setRiskLevel}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select risk level" />
@@ -121,8 +139,12 @@ export function StrategySearch() {
                   <SelectItem value="high">High Risk</SelectItem>
                 </SelectContent>
               </Select>
-              
-              <Button onClick={handleSearch} disabled={!strategyType} className="md:col-span-2">
+
+              <Button
+                onClick={handleSearch}
+                disabled={!strategyType}
+                className="md:col-span-2"
+              >
                 Search Strategies
               </Button>
             </div>
@@ -147,30 +169,39 @@ export function StrategySearch() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {recommendedStrategies?.slice(0, 3).map((strategy: any, index: number) => (
-                <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-semibold">{strategy.name || strategy.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {strategy.description || strategy.summary}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      {strategy.risk_level && (
-                        <Badge className={getRiskBadgeColor(strategy.risk_level)}>
-                          {strategy.risk_level}
-                        </Badge>
-                      )}
-                      {strategy.win_rate && (
-                        <Badge variant="outline">
-                          {strategy.win_rate}% Win Rate
-                        </Badge>
-                      )}
+              {recommendedStrategies
+                ?.slice(0, 3)
+                .map((strategy: any, index: number) => (
+                  <div
+                    key={index}
+                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-semibold">
+                          {strategy.name || strategy.title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {strategy.description || strategy.summary}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        {strategy.risk_level && (
+                          <Badge
+                            className={getRiskBadgeColor(strategy.risk_level)}
+                          >
+                            {strategy.risk_level}
+                          </Badge>
+                        )}
+                        {strategy.win_rate && (
+                          <Badge variant="outline">
+                            {strategy.win_rate}% Win Rate
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </CardContent>
@@ -195,26 +226,39 @@ export function StrategySearch() {
             ) : (
               <div className="space-y-4">
                 {currentResults.map((strategy: any, index: number) => (
-                  <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div
+                    key={index}
+                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h4 className="font-semibold">{strategy.name || strategy.title}</h4>
+                        <h4 className="font-semibold">
+                          {strategy.name || strategy.title}
+                        </h4>
                         <p className="text-sm text-muted-foreground mt-1">
                           {strategy.description || strategy.summary}
                         </p>
                         {strategy.key_features && (
                           <div className="mt-2 flex flex-wrap gap-1">
-                            {strategy.key_features.slice(0, 3).map((feature: string, i: number) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {feature}
-                              </Badge>
-                            ))}
+                            {strategy.key_features
+                              .slice(0, 3)
+                              .map((feature: string, i: number) => (
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {feature}
+                                </Badge>
+                              ))}
                           </div>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 ml-4">
                         {strategy.risk_level && (
-                          <Badge className={getRiskBadgeColor(strategy.risk_level)}>
+                          <Badge
+                            className={getRiskBadgeColor(strategy.risk_level)}
+                          >
                             {strategy.risk_level}
                           </Badge>
                         )}

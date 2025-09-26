@@ -1,5 +1,4 @@
-
-import { storage } from './storage';
+import { storage } from "./storage";
 
 export interface TradingLimits {
   dailyTradeLimit: number;
@@ -27,7 +26,10 @@ export class TradingLimitsService {
     return userLimits || this.defaultLimits;
   }
 
-  static async setUserLimits(userId: string, limits: Partial<TradingLimits>): Promise<void> {
+  static async setUserLimits(
+    userId: string,
+    limits: Partial<TradingLimits>,
+  ): Promise<void> {
     await storage.setUserTradingLimits(userId, limits);
   }
 
@@ -35,7 +37,7 @@ export class TradingLimitsService {
     userId: string,
     tradeAmount: number,
     stockSymbol: string,
-    tradeType: 'BUY' | 'SELL'
+    tradeType: "BUY" | "SELL",
   ): Promise<TradeValidation> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -46,21 +48,31 @@ export class TradingLimitsService {
       const dailyTrades = await storage.getDailyTrades(userId);
 
       // Check daily trade limit
-      const dailyTotal = dailyTrades.reduce((sum, trade) => sum + Math.abs(trade.amount), 0);
+      const dailyTotal = dailyTrades.reduce(
+        (sum, trade) => sum + Math.abs(trade.amount),
+        0,
+      );
       if (dailyTotal + tradeAmount > limits.dailyTradeLimit) {
-        errors.push(`Trade exceeds daily limit of $${limits.dailyTradeLimit.toLocaleString()}`);
+        errors.push(
+          `Trade exceeds daily limit of $${limits.dailyTradeLimit.toLocaleString()}`,
+        );
       }
 
       // Check position size limit
       if (tradeAmount > limits.maxPositionSize) {
-        errors.push(`Trade amount exceeds maximum position size of $${limits.maxPositionSize.toLocaleString()}`);
+        errors.push(
+          `Trade amount exceeds maximum position size of $${limits.maxPositionSize.toLocaleString()}`,
+        );
       }
 
       // Check portfolio value limit for buys
-      if (tradeType === 'BUY' && portfolio) {
-        const newPortfolioValue = parseFloat(portfolio.totalValue) + tradeAmount;
+      if (tradeType === "BUY" && portfolio) {
+        const newPortfolioValue =
+          parseFloat(portfolio.totalValue) + tradeAmount;
         if (newPortfolioValue > limits.maxPortfolioValue) {
-          errors.push(`Trade would exceed maximum portfolio value of $${limits.maxPortfolioValue.toLocaleString()}`);
+          errors.push(
+            `Trade would exceed maximum portfolio value of $${limits.maxPortfolioValue.toLocaleString()}`,
+          );
         }
       }
 
@@ -69,9 +81,11 @@ export class TradingLimitsService {
         const portfolioValue = parseFloat(portfolio.totalValue);
         const dailyPL = parseFloat(portfolio.dayPL);
         const riskAmount = portfolioValue * limits.riskThreshold;
-        
+
         if (dailyPL < -riskAmount) {
-          errors.push(`Daily loss limit of ${(limits.riskThreshold * 100).toFixed(1)}% has been reached`);
+          errors.push(
+            `Daily loss limit of ${(limits.riskThreshold * 100).toFixed(1)}% has been reached`,
+          );
         }
 
         // Warning for approaching limits
@@ -92,7 +106,7 @@ export class TradingLimitsService {
     } catch (error) {
       return {
         isValid: false,
-        errors: ['Failed to validate trade - please try again'],
+        errors: ["Failed to validate trade - please try again"],
         warnings: [],
       };
     }
@@ -102,7 +116,7 @@ export class TradingLimitsService {
     userId: string,
     stockSymbol: string,
     amount: number,
-    tradeType: 'BUY' | 'SELL'
+    tradeType: "BUY" | "SELL",
   ): Promise<void> {
     await storage.recordTrade({
       userId,

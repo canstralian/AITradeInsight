@@ -1,4 +1,3 @@
-
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
@@ -16,12 +15,12 @@ export class AlgoliaMCPService {
           ...process.env,
           ALGOLIA_APP_ID: process.env.ALGOLIA_APP_ID,
           ALGOLIA_API_KEY: process.env.ALGOLIA_API_KEY,
-        }
+        },
       });
 
       this.client = new Client(
         { name: "trading-strategies-search", version: "1.0.0" },
-        { capabilities: {} }
+        { capabilities: {} },
       );
 
       await this.client.connect(this.transport);
@@ -31,7 +30,10 @@ export class AlgoliaMCPService {
     }
   }
 
-  async searchTradingStrategies(query: string, indexName: string = "trading_strategies") {
+  async searchTradingStrategies(
+    query: string,
+    indexName: string = "trading_strategies",
+  ) {
     if (!this.client) {
       await this.connect();
     }
@@ -49,9 +51,9 @@ export class AlgoliaMCPService {
           search_params: {
             hitsPerPage: 20,
             attributesToRetrieve: ["*"],
-            filters: "category:trading_strategy"
-          }
-        }
+            filters: "category:trading_strategy",
+          },
+        },
       });
 
       return result.content;
@@ -84,9 +86,9 @@ export class AlgoliaMCPService {
           search_params: {
             hitsPerPage: 50,
             filters: filters.join(" AND "),
-            attributesToRetrieve: ["*"]
-          }
-        }
+            attributesToRetrieve: ["*"],
+          },
+        },
       });
 
       return result?.content;

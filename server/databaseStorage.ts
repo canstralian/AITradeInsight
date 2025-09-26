@@ -64,12 +64,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStock(id: number): Promise<Stock | undefined> {
-    const [stock] = await db.select().from(stocksTable).where(eq(stocksTable.id, id));
+    const [stock] = await db
+      .select()
+      .from(stocksTable)
+      .where(eq(stocksTable.id, id));
     return stock;
   }
 
   async getStockBySymbol(symbol: string): Promise<Stock | undefined> {
-    const [stock] = await db.select().from(stocksTable).where(eq(stocksTable.symbol, symbol));
+    const [stock] = await db
+      .select()
+      .from(stocksTable)
+      .where(eq(stocksTable.symbol, symbol));
     return stock;
   }
 
@@ -78,7 +84,10 @@ export class DatabaseStorage implements IStorage {
     return newStock;
   }
 
-  async updateStock(id: number, stock: Partial<InsertStock>): Promise<Stock | undefined> {
+  async updateStock(
+    id: number,
+    stock: Partial<InsertStock>,
+  ): Promise<Stock | undefined> {
     const [updatedStock] = await db
       .update(stocksTable)
       .set(stock)
@@ -89,14 +98,11 @@ export class DatabaseStorage implements IStorage {
 
   async searchStocks(query: string): Promise<Stock[]> {
     // For simplicity, searching by symbol or name
-    return await db
-      .select()
-      .from(stocksTable)
-      .where(
-        // Use ilike for case-insensitive search
-        // This is a simplified version - in production you'd use proper text search
-        eq(stocksTable.symbol, query.toUpperCase())
-      );
+    return await db.select().from(stocksTable).where(
+      // Use ilike for case-insensitive search
+      // This is a simplified version - in production you'd use proper text search
+      eq(stocksTable.symbol, query.toUpperCase()),
+    );
   }
 
   // Portfolio methods
@@ -109,11 +115,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPortfolio(portfolio: InsertPortfolio): Promise<Portfolio> {
-    const [newPortfolio] = await db.insert(portfoliosTable).values(portfolio).returning();
+    const [newPortfolio] = await db
+      .insert(portfoliosTable)
+      .values(portfolio)
+      .returning();
     return newPortfolio;
   }
 
-  async updatePortfolio(userId: number, portfolio: Partial<InsertPortfolio>): Promise<Portfolio | undefined> {
+  async updatePortfolio(
+    userId: number,
+    portfolio: Partial<InsertPortfolio>,
+  ): Promise<Portfolio | undefined> {
     const [updatedPortfolio] = await db
       .update(portfoliosTable)
       .set(portfolio)
@@ -124,10 +136,15 @@ export class DatabaseStorage implements IStorage {
 
   // Watchlist methods
   async getWatchlist(userId: number): Promise<Watchlist[]> {
-    return await db.select().from(watchlistTable).where(eq(watchlistTable.userId, userId));
+    return await db
+      .select()
+      .from(watchlistTable)
+      .where(eq(watchlistTable.userId, userId));
   }
 
-  async getWatchlistWithStocks(userId: number): Promise<(Watchlist & { stock: Stock })[]> {
+  async getWatchlistWithStocks(
+    userId: number,
+  ): Promise<(Watchlist & { stock: Stock })[]> {
     const watchlistItems = await db
       .select({
         id: watchlistTable.id,
@@ -155,7 +172,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addToWatchlist(watchlistItem: InsertWatchlist): Promise<Watchlist> {
-    const [newWatchlistItem] = await db.insert(watchlistTable).values(watchlistItem).returning();
+    const [newWatchlistItem] = await db
+      .insert(watchlistTable)
+      .values(watchlistItem)
+      .returning();
     return newWatchlistItem;
   }
 
@@ -165,8 +185,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(watchlistTable.userId, userId),
-          eq(watchlistTable.stockId, stockId)
-        )
+          eq(watchlistTable.stockId, stockId),
+        ),
       );
     return result.rowCount > 0;
   }
@@ -184,12 +204,20 @@ export class DatabaseStorage implements IStorage {
     return prediction;
   }
 
-  async createAiPrediction(prediction: InsertAiPrediction): Promise<AiPrediction> {
-    const [newPrediction] = await db.insert(aiPredictionsTable).values(prediction).returning();
+  async createAiPrediction(
+    prediction: InsertAiPrediction,
+  ): Promise<AiPrediction> {
+    const [newPrediction] = await db
+      .insert(aiPredictionsTable)
+      .values(prediction)
+      .returning();
     return newPrediction;
   }
 
-  async updateAiPrediction(stockId: number, prediction: Partial<InsertAiPrediction>): Promise<AiPrediction | undefined> {
+  async updateAiPrediction(
+    stockId: number,
+    prediction: Partial<InsertAiPrediction>,
+  ): Promise<AiPrediction | undefined> {
     const [updatedPrediction] = await db
       .update(aiPredictionsTable)
       .set(prediction)
@@ -204,11 +232,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTradingSignalsByStock(stockId: number): Promise<TradingSignal[]> {
-    return await db.select().from(tradingSignalsTable).where(eq(tradingSignalsTable.stockId, stockId));
+    return await db
+      .select()
+      .from(tradingSignalsTable)
+      .where(eq(tradingSignalsTable.stockId, stockId));
   }
 
-  async createTradingSignal(signal: InsertTradingSignal): Promise<TradingSignal> {
-    const [newSignal] = await db.insert(tradingSignalsTable).values(signal).returning();
+  async createTradingSignal(
+    signal: InsertTradingSignal,
+  ): Promise<TradingSignal> {
+    const [newSignal] = await db
+      .insert(tradingSignalsTable)
+      .values(signal)
+      .returning();
     return newSignal;
   }
 
@@ -218,12 +254,19 @@ export class DatabaseStorage implements IStorage {
     return sentiment;
   }
 
-  async createMarketSentiment(sentiment: InsertMarketSentiment): Promise<MarketSentiment> {
-    const [newSentiment] = await db.insert(marketSentimentTable).values(sentiment).returning();
+  async createMarketSentiment(
+    sentiment: InsertMarketSentiment,
+  ): Promise<MarketSentiment> {
+    const [newSentiment] = await db
+      .insert(marketSentimentTable)
+      .values(sentiment)
+      .returning();
     return newSentiment;
   }
 
-  async updateMarketSentiment(sentiment: Partial<InsertMarketSentiment>): Promise<MarketSentiment | undefined> {
+  async updateMarketSentiment(
+    sentiment: Partial<InsertMarketSentiment>,
+  ): Promise<MarketSentiment | undefined> {
     const [updatedSentiment] = await db
       .update(marketSentimentTable)
       .set(sentiment)
@@ -235,7 +278,9 @@ export class DatabaseStorage implements IStorage {
   async saveAuditLog(auditLog: any): Promise<void> {
     // For now, just log to console
     // In a real implementation, this would save to an audit_logs table
-    console.log(`[AUDIT] ${auditLog.severity}: ${auditLog.action} on ${auditLog.resource} by ${auditLog.userId}`);
+    console.log(
+      `[AUDIT] ${auditLog.severity}: ${auditLog.action} on ${auditLog.resource} by ${auditLog.userId}`,
+    );
   }
 
   async getAuditLogs(filters: any): Promise<any[]> {

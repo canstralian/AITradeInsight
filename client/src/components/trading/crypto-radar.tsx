@@ -17,7 +17,7 @@ function CryptoRadar() {
     {
       symbol: "BTC",
       name: "Bitcoin",
-      price: 43250.00,
+      price: 43250.0,
       change24h: 2.5,
       volume: 28500000000,
       marketCap: 850000000000,
@@ -25,7 +25,7 @@ function CryptoRadar() {
     {
       symbol: "ETH",
       name: "Ethereum",
-      price: 2580.00,
+      price: 2580.0,
       change24h: -1.2,
       volume: 15200000000,
       marketCap: 310000000000,
@@ -33,7 +33,7 @@ function CryptoRadar() {
     {
       symbol: "BNB",
       name: "BNB",
-      price: 315.50,
+      price: 315.5,
       change24h: 0.8,
       volume: 1800000000,
       marketCap: 47000000000,
@@ -41,16 +41,16 @@ function CryptoRadar() {
   ]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(price);
   };
 
   const formatVolume = (volume: number) => {
-    return new Intl.NumberFormat('en-US', {
-      notation: 'compact',
-      compactDisplay: 'short',
+    return new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      compactDisplay: "short",
     }).format(volume);
   };
 
@@ -65,7 +65,10 @@ function CryptoRadar() {
       <CardContent>
         <div className="space-y-4">
           {cryptoData.map((crypto) => (
-            <div key={crypto.symbol} className="flex items-center justify-between p-3 border rounded-lg">
+            <div
+              key={crypto.symbol}
+              className="flex items-center justify-between p-3 border rounded-lg"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
                   <span className="text-sm font-bold text-orange-600">
@@ -74,7 +77,9 @@ function CryptoRadar() {
                 </div>
                 <div>
                   <p className="font-medium">{crypto.name}</p>
-                  <p className="text-sm text-muted-foreground">{crypto.symbol}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {crypto.symbol}
+                  </p>
                 </div>
               </div>
 
@@ -86,11 +91,12 @@ function CryptoRadar() {
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
-                  <Badge 
+                  <Badge
                     variant={crypto.change24h > 0 ? "default" : "destructive"}
                     className="text-xs"
                   >
-                    {crypto.change24h > 0 ? "+" : ""}{crypto.change24h.toFixed(2)}%
+                    {crypto.change24h > 0 ? "+" : ""}
+                    {crypto.change24h.toFixed(2)}%
                   </Badge>
                 </div>
               </div>

@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function PortfolioOverview() {
   const { data: portfolio, isLoading } = useQuery({
-    queryKey: ['/api/portfolio'],
+    queryKey: ["/api/portfolio"],
     queryFn: tradingApi.getPortfolio,
   });
 
@@ -48,15 +48,20 @@ export function PortfolioOverview() {
       <Card className="trading-card">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-trading-neutral">Portfolio Value</span>
+            <span className="text-sm text-trading-neutral">
+              Portfolio Value
+            </span>
             <TrendingUp className="w-4 h-4 text-trading-green" />
           </div>
           <div className="text-2xl font-bold font-mono">
             ${parseFloat(portfolio.totalValue).toLocaleString()}
           </div>
-          <div className={`text-sm ${isPositiveTotal ? 'text-trading-green' : 'text-trading-red'}`}>
-            {isPositiveTotal ? '+' : ''}{portfolio.dayPLPercent}% 
-            ({isPositiveDay ? '+' : ''}${parseFloat(portfolio.dayPL).toLocaleString()})
+          <div
+            className={`text-sm ${isPositiveTotal ? "text-trading-green" : "text-trading-red"}`}
+          >
+            {isPositiveTotal ? "+" : ""}
+            {portfolio.dayPLPercent}% ({isPositiveDay ? "+" : ""}$
+            {parseFloat(portfolio.dayPL).toLocaleString()})
           </div>
         </CardContent>
       </Card>
@@ -70,8 +75,11 @@ export function PortfolioOverview() {
           <div className="text-2xl font-bold font-mono">
             ${parseFloat(portfolio.dayPL).toLocaleString()}
           </div>
-          <div className={`text-sm ${isPositiveDay ? 'text-trading-green' : 'text-trading-red'}`}>
-            {isPositiveDay ? '+' : ''}{portfolio.dayPLPercent}%
+          <div
+            className={`text-sm ${isPositiveDay ? "text-trading-green" : "text-trading-red"}`}
+          >
+            {isPositiveDay ? "+" : ""}
+            {portfolio.dayPLPercent}%
           </div>
         </CardContent>
       </Card>

@@ -1,7 +1,6 @@
-
-import speakeasy from 'speakeasy';
-import QRCode from 'qrcode';
-import { storage } from './storage';
+import speakeasy from "speakeasy";
+import QRCode from "qrcode";
+import { storage } from "./storage";
 
 export interface MFASetup {
   secret: string;
@@ -15,10 +14,13 @@ export interface MFAVerification {
 }
 
 export class MFAService {
-  static generateSecret(userEmail: string): { secret: string; otpAuthUrl: string } {
+  static generateSecret(userEmail: string): {
+    secret: string;
+    otpAuthUrl: string;
+  } {
     const secret = speakeasy.generateSecret({
       name: userEmail,
-      issuer: 'Smart AI Trading Assistant',
+      issuer: "Smart AI Trading Assistant",
       length: 32,
     });
 
@@ -32,7 +34,7 @@ export class MFAService {
     try {
       return await QRCode.toDataURL(otpAuthUrl);
     } catch (error) {
-      throw new Error('Failed to generate QR code');
+      throw new Error("Failed to generate QR code");
     }
   }
 
@@ -72,9 +74,12 @@ export class MFAService {
     });
   }
 
-  static async verifyMFA(userId: string, token: string): Promise<MFAVerification> {
+  static async verifyMFA(
+    userId: string,
+    token: string,
+  ): Promise<MFAVerification> {
     const mfaData = await storage.getMFAData(userId);
-    
+
     if (!mfaData || !mfaData.isVerified) {
       return { isValid: false };
     }
@@ -94,25 +99,31 @@ export class MFAService {
     return { isValid: false };
   }
 
-  static async completeMFASetup(userId: string, verificationToken: string): Promise<boolean> {
+  static async completeMFASetup(
+    userId: string,
+    verificationToken: string,
+  ): Promise<boolean> {
     const mfaSetup = await storage.getMFASetup(userId);
-    
+
     if (!mfaSetup || this.verifyToken(mfaSetup.secret, verificationToken)) {
       await storage.completeMFASetup(userId);
       return true;
     }
-    
+
     return false;
   }
 
-  static async disableMFA(userId: string, verificationToken: string): Promise<boolean> {
+  static async disableMFA(
+    userId: string,
+    verificationToken: string,
+  ): Promise<boolean> {
     const verification = await this.verifyMFA(userId, verificationToken);
-    
+
     if (verification.isValid) {
       await storage.disableMFA(userId);
       return true;
     }
-    
+
     return false;
   }
 }

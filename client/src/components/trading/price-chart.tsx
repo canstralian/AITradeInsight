@@ -2,7 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { tradingApi } from "@/lib/trading-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";
 
@@ -12,18 +18,18 @@ export default function PriceChart() {
   const chartRef = useRef<HTMLCanvasElement>(null);
 
   const { data: chartData, isLoading } = useQuery({
-    queryKey: ['/api/chart', selectedStock],
+    queryKey: ["/api/chart", selectedStock],
     queryFn: () => tradingApi.getChartData(selectedStock),
   });
 
   const { data: stocks } = useQuery({
-    queryKey: ['/api/stocks'],
+    queryKey: ["/api/stocks"],
     queryFn: tradingApi.getStocks,
   });
 
   useEffect(() => {
     if (chartData && chartRef.current) {
-      const ctx = chartRef.current.getContext('2d');
+      const ctx = chartRef.current.getContext("2d");
       if (!ctx) return;
 
       // Clear previous chart
@@ -37,15 +43,15 @@ export default function PriceChart() {
       const chartHeight = height - 2 * padding;
 
       // Calculate price range
-      const prices = chartData.map(d => parseFloat(d.price));
+      const prices = chartData.map((d) => parseFloat(d.price));
       const minPrice = Math.min(...prices);
       const maxPrice = Math.max(...prices);
       const priceRange = maxPrice - minPrice;
 
       // Draw grid lines
-      ctx.strokeStyle = 'rgba(116, 125, 140, 0.1)';
+      ctx.strokeStyle = "rgba(116, 125, 140, 0.1)";
       ctx.lineWidth = 1;
-      
+
       for (let i = 0; i <= 4; i++) {
         const y = padding + (i * chartHeight) / 4;
         ctx.beginPath();
@@ -55,14 +61,16 @@ export default function PriceChart() {
       }
 
       // Draw price line
-      ctx.strokeStyle = 'var(--trading-green)';
+      ctx.strokeStyle = "var(--trading-green)";
       ctx.lineWidth = 2;
       ctx.beginPath();
 
       chartData.forEach((point, index) => {
         const x = padding + (index * chartWidth) / (chartData.length - 1);
-        const y = padding + ((maxPrice - parseFloat(point.price)) / priceRange) * chartHeight;
-        
+        const y =
+          padding +
+          ((maxPrice - parseFloat(point.price)) / priceRange) * chartHeight;
+
         if (index === 0) {
           ctx.moveTo(x, y);
         } else {
@@ -76,8 +84,8 @@ export default function PriceChart() {
       if (chartData.length > 0) {
         const lastPrice = parseFloat(chartData[chartData.length - 1].price);
         const y = padding + ((maxPrice - lastPrice) / priceRange) * chartHeight;
-        
-        ctx.strokeStyle = 'var(--trading-blue)';
+
+        ctx.strokeStyle = "var(--trading-blue)";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
@@ -87,8 +95,8 @@ export default function PriceChart() {
         ctx.setLineDash([]);
 
         // Price label
-        ctx.fillStyle = 'var(--trading-blue)';
-        ctx.font = '12px monospace';
+        ctx.fillStyle = "var(--trading-blue)";
+        ctx.font = "12px monospace";
         ctx.fillText(`$${lastPrice.toFixed(2)}`, width - padding + 25, y + 4);
       }
     }
@@ -98,7 +106,9 @@ export default function PriceChart() {
     <Card className="trading-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Price Chart & AI Predictions</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Price Chart & AI Predictions
+          </CardTitle>
           <div className="flex items-center space-x-2">
             <Select value={selectedStock} onValueChange={setSelectedStock}>
               <SelectTrigger className="w-24">

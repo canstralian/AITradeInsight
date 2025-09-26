@@ -24,9 +24,9 @@ const queryClient = new QueryClient({
 });
 
 // Global error handler for unhandled promise rejections
-if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
+if (typeof window !== "undefined") {
+  window.addEventListener("unhandledrejection", (event) => {
+    console.error("Unhandled promise rejection:", event.reason);
     // In production, send to error reporting service
     if (import.meta.env.PROD) {
       // errorReportingService.captureException(event.reason);
@@ -71,3 +71,5 @@ function App() {
     </ErrorBoundary>
   );
 }
+
+export default App;

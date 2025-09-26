@@ -1,7 +1,6 @@
-
 interface AppConfig {
   apiUrl: string;
-  environment: 'development' | 'production' | 'test';
+  environment: "development" | "production" | "test";
   features: {
     enableMockData: boolean;
     enableErrorReporting: boolean;
@@ -17,7 +16,7 @@ interface AppConfig {
     };
   };
   ui: {
-    theme: 'light' | 'dark' | 'system';
+    theme: "light" | "dark" | "system";
     animations: boolean;
     tooltips: boolean;
   };
@@ -29,16 +28,16 @@ interface AppConfig {
 }
 
 const config: AppConfig = {
-  apiUrl: import.meta.env.VITE_API_URL || '',
-  environment: (import.meta.env.MODE as any) || 'development',
-  
+  apiUrl: import.meta.env.VITE_API_URL || "",
+  environment: (import.meta.env.MODE as any) || "development",
+
   features: {
     enableMockData: import.meta.env.DEV,
     enableErrorReporting: import.meta.env.PROD,
     enableAnalytics: import.meta.env.PROD,
     enableDevTools: import.meta.env.DEV,
   },
-  
+
   api: {
     timeout: 30000, // 30 seconds
     retries: 3,
@@ -47,13 +46,13 @@ const config: AppConfig = {
       window: 60000, // 1 minute
     },
   },
-  
+
   ui: {
-    theme: 'dark',
+    theme: "dark",
     animations: true,
     tooltips: true,
   },
-  
+
   security: {
     enableCSP: import.meta.env.PROD,
     tokenRefreshBuffer: 5, // 5 minutes before expiry
@@ -64,27 +63,27 @@ const config: AppConfig = {
 // Validation
 const validateConfig = () => {
   const errors: string[] = [];
-  
+
   // Validate required environment variables in production
-  if (config.environment === 'production') {
+  if (config.environment === "production") {
     if (!config.apiUrl) {
-      errors.push('VITE_API_URL is required in production');
+      errors.push("VITE_API_URL is required in production");
     }
   }
-  
+
   // Validate numeric values
   if (config.api.timeout <= 0) {
-    errors.push('API timeout must be greater than 0');
+    errors.push("API timeout must be greater than 0");
   }
-  
+
   if (config.api.retries < 0) {
-    errors.push('API retries must be 0 or greater');
+    errors.push("API retries must be 0 or greater");
   }
-  
+
   if (errors.length > 0) {
-    console.error('Configuration validation failed:', errors);
-    if (config.environment === 'production') {
-      throw new Error(`Invalid configuration: ${errors.join(', ')}`);
+    console.error("Configuration validation failed:", errors);
+    if (config.environment === "production") {
+      throw new Error(`Invalid configuration: ${errors.join(", ")}`);
     }
   }
 };
@@ -95,12 +94,14 @@ validateConfig();
 export { config, type AppConfig };
 
 // Helper functions
-export const isDevelopment = () => config.environment === 'development';
-export const isProduction = () => config.environment === 'production';
-export const isTest = () => config.environment === 'test';
+export const isDevelopment = () => config.environment === "development";
+export const isProduction = () => config.environment === "production";
+export const isTest = () => config.environment === "test";
 
 // Feature flags
-export const isFeatureEnabled = (feature: keyof AppConfig['features']): boolean => {
+export const isFeatureEnabled = (
+  feature: keyof AppConfig["features"],
+): boolean => {
   return config.features[feature];
 };
 

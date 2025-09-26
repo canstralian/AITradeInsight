@@ -1,33 +1,47 @@
-import { 
-  Home, 
-  Brain, 
-  TrendingUp, 
-  Newspaper, 
-  Star, 
-  Wallet, 
+import {
+  Home,
+  Brain,
+  TrendingUp,
+  Newspaper,
+  Star,
+  Wallet,
   User,
   BarChart3,
   Menu,
-  X
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useLocation } from "wouter";
 
 const navigationItems = [
   { icon: Home, label: "Dashboard", href: "/dashboard", active: true },
   { icon: Brain, label: "AI Predictions", href: "/dashboard#ai-predictions" },
-  { icon: TrendingUp, label: "Trading Signals", href: "/dashboard#trading-signals" },
-  { icon: Newspaper, label: "Market Sentiment", href: "/dashboard#market-sentiment" },
+  {
+    icon: TrendingUp,
+    label: "Trading Signals",
+    href: "/dashboard#trading-signals",
+  },
+  {
+    icon: Newspaper,
+    label: "Market Sentiment",
+    href: "/dashboard#market-sentiment",
+  },
   { icon: Star, label: "Watchlist", href: "/dashboard#watchlist" },
   { icon: Wallet, label: "Portfolio", href: "/dashboard#portfolio" },
 ];
 
 function NavigationContent() {
   const [location, setLocation] = useLocation();
-  
+
   return (
     <>
       {/* Header */}
@@ -43,18 +57,20 @@ function NavigationContent() {
       <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
+          const isActive =
+            location === item.href ||
+            (item.href === "/dashboard" && location === "/");
           return (
-            <button 
+            <button
               key={item.label}
               onClick={() => {
-                if (item.href.includes('#')) {
-                  const [path, hash] = item.href.split('#');
+                if (item.href.includes("#")) {
+                  const [path, hash] = item.href.split("#");
                   setLocation(path);
                   setTimeout(() => {
                     const element = document.getElementById(hash);
                     if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
+                      element.scrollIntoView({ behavior: "smooth" });
                     }
                   }, 100);
                 } else {
@@ -64,9 +80,10 @@ function NavigationContent() {
               className={`
                 w-full flex items-center space-x-3 px-3 py-3 sm:py-2 rounded-lg transition-colors
                 touch-manipulation min-h-[48px] sm:min-h-[40px]
-                ${isActive 
-                  ? "bg-primary/10 text-primary border border-primary/20" 
-                  : "text-trading-neutral hover:bg-trading-surface hover:text-foreground"
+                ${
+                  isActive
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "text-trading-neutral hover:bg-trading-surface hover:text-foreground"
                 }
               `}
             >
@@ -101,13 +118,17 @@ export default function Sidebar() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-50 bg-background border border-border shadow-lg lg:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="fixed top-4 left-4 z-50 bg-background border border-border shadow-lg lg:hidden"
+          >
             <Menu className="w-5 h-5" />
             <span className="sr-only">Open navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent 
-          side="left" 
+        <SheetContent
+          side="left"
           className="w-80 p-0 bg-trading-surface border-r border-border"
         >
           <SheetHeader className="sr-only">
@@ -136,17 +157,13 @@ export function MobileMenuTrigger() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="lg:hidden"
-        >
+        <Button variant="ghost" size="sm" className="lg:hidden">
           <Menu className="w-5 h-5" />
           <span className="sr-only">Open navigation menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent 
-        side="left" 
+      <SheetContent
+        side="left"
         className="w-80 p-0 bg-trading-surface border-r border-border"
       >
         <SheetHeader className="sr-only">

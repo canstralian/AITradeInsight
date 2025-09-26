@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radar, Eye, Zap, TrendingUp, Search } from "lucide-react";
+import { Radar, Eye, Zap, TrendingUp, Search, CheckCircle } from "lucide-react";
 import CryptoRadar from "@/components/trading/crypto-radar";
 import CryptoValidation from "@/components/trading/crypto-validation-fixed";
 import { AutomatedTrading } from "@/components/trading/automated-trading";
 import { StrategySearch } from "@/components/trading/strategy-search";
 
-export default function CryptoDashboard() {
+export function CryptoDashboard() {
   const [selectedCoinId, setSelectedCoinId] = useState<number | null>(null);
   const [validatedCoin, setValidatedCoin] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("discover");
@@ -31,7 +37,11 @@ export default function CryptoDashboard() {
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="discover" className="flex items-center gap-2">
             <Radar className="h-4 w-4" />
@@ -46,9 +56,9 @@ export default function CryptoDashboard() {
             Trade
           </TabsTrigger>
           <TabsTrigger value="strategies" className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              Strategy Search
-            </TabsTrigger>
+            <Search className="w-4 h-4" />
+            Strategy Search
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="discover" className="space-y-6">
@@ -56,7 +66,8 @@ export default function CryptoDashboard() {
             <CardHeader>
               <CardTitle>🔍 Discover Top Coins</CardTitle>
               <CardDescription>
-                Find top coins using our Radars — powered by whale tracking, social media trends, and real-time technical analysis.
+                Find top coins using our Radars — powered by whale tracking,
+                social media trends, and real-time technical analysis.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -70,11 +81,15 @@ export default function CryptoDashboard() {
             <CardHeader>
               <CardTitle>✅ Validate Your Selection</CardTitle>
               <CardDescription>
-                Dive deeper into each coin with AI-backed social and technical insights. Know what's pumping and why.
+                Dive deeper into each coin with AI-backed social and technical
+                insights. Know what's pumping and why.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CryptoValidation coinId={selectedCoinId || 1} onTradeSetup={handleTradeSetup} />
+              <CryptoValidation
+                coinId={selectedCoinId || 1}
+                onTradeSetup={handleTradeSetup}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -84,7 +99,8 @@ export default function CryptoDashboard() {
             <CardHeader>
               <CardTitle>⚡️ Automated Trading</CardTitle>
               <CardDescription>
-                Let the AI handle it — set automated SL/TPs tailored to each coin. One click, fully optimized.
+                Let the AI handle it — set automated SL/TPs tailored to each
+                coin. One click, fully optimized.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -94,8 +110,8 @@ export default function CryptoDashboard() {
         </TabsContent>
 
         <TabsContent value="strategies" className="space-y-6">
-            <StrategySearch />
-          </TabsContent>
+          <StrategySearch />
+        </TabsContent>
       </Tabs>
 
       <div className="mt-8 text-center">

@@ -27,7 +27,7 @@ export interface AiPredictionData {
   prediction24h: string;
   prediction7d: string;
   confidence: string;
-  signal: 'BUY' | 'SELL' | 'HOLD' | 'WATCH';
+  signal: "BUY" | "SELL" | "HOLD" | "WATCH";
   aiScore: number;
   lastUpdated: string;
   stock?: StockData;
@@ -36,15 +36,15 @@ export interface AiPredictionData {
 export interface TradingSignalData {
   id: number;
   stockId: number;
-  signalType: 'BUY' | 'SELL' | 'HOLD' | 'WATCH';
+  signalType: "BUY" | "SELL" | "HOLD" | "WATCH";
   description: string;
-  strength: 'STRONG' | 'MODERATE' | 'WEAK';
+  strength: "STRONG" | "MODERATE" | "WEAK";
   createdAt: string;
 }
 
 export interface MarketSentimentData {
   id: number;
-  overall: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  overall: "BULLISH" | "BEARISH" | "NEUTRAL";
   bullishPercent: string;
   bearishPercent: string;
   neutralPercent: string;

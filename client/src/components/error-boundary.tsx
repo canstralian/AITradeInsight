@@ -1,8 +1,7 @@
-
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
@@ -29,17 +28,17 @@ export class ErrorBoundary extends Component<Props, State> {
     return {
       hasError: true,
       error,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error);
-    console.error('Error info:', errorInfo);
-    
+    console.error("Error caught by boundary:", error);
+    console.error("Error info:", errorInfo);
+
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // In production, you would send this to your error reporting service
@@ -54,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   render() {
@@ -74,9 +73,10 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-400 text-center">
-                We're sorry, but something unexpected happened. Our team has been notified.
+                We're sorry, but something unexpected happened. Our team has
+                been notified.
               </p>
-              
+
               {import.meta.env.DEV && this.state.error && (
                 <details className="bg-gray-900 p-3 rounded border border-gray-600">
                   <summary className="text-sm text-gray-400 cursor-pointer">
@@ -119,11 +119,11 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: ErrorInfo) => {
-    console.error('Error:', error);
+    console.error("Error:", error);
     if (errorInfo) {
-      console.error('Error Info:', errorInfo);
+      console.error("Error Info:", errorInfo);
     }
-    
+
     // In production, send to error reporting service
     if (import.meta.env.PROD) {
       // errorReportingService.captureException(error, { extra: errorInfo });

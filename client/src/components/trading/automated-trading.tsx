@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tradingApi } from "@/lib/trading-api";
@@ -23,7 +22,7 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
   const queryClient = useQueryClient();
 
   const { data: trades, isLoading } = useQuery({
-    queryKey: ['/api/trading/automated'],
+    queryKey: ["/api/trading/automated"],
     queryFn: tradingApi.getAutomatedTrades,
   });
 
@@ -34,7 +33,7 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
         title: "Trade Created",
         description: "Your automated trade has been set up successfully!",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/trading/automated'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/trading/automated"] });
       setAmount("");
       setStopLoss("");
       setTakeProfit("");
@@ -55,7 +54,7 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
         title: "Trade Cancelled",
         description: "Your automated trade has been cancelled.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/trading/automated'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/trading/automated"] });
     },
   });
 
@@ -71,7 +70,7 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
 
     createTradeMutation.mutate({
       coinId: coinData.coin.id,
-      tradeType: 'BUY',
+      tradeType: "BUY",
       amount: parseFloat(amount),
       price: parseFloat(coinData.coin.price),
       stopLoss: parseFloat(stopLoss),
@@ -83,12 +82,12 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
     if (coinData?.coin?.price) {
       const price = parseFloat(coinData.coin.price);
       const confidence = coinData.overallConfidence || 70;
-      
+
       // AI-optimized levels based on confidence and volatility
       const volatilityFactor = Math.min(confidence / 100, 0.8);
-      const stopLossLevel = price * (1 - (0.1 * volatilityFactor));
-      const takeProfitLevel = price * (1 + (0.2 * volatilityFactor));
-      
+      const stopLossLevel = price * (1 - 0.1 * volatilityFactor);
+      const takeProfitLevel = price * (1 + 0.2 * volatilityFactor);
+
       setStopLoss(stopLossLevel.toFixed(6));
       setTakeProfit(takeProfitLevel.toFixed(6));
     }
@@ -96,14 +95,14 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
 
   const getTradeStatusColor = (status: string) => {
     switch (status) {
-      case 'EXECUTED':
-        return 'bg-trading-green';
-      case 'PENDING':
-        return 'bg-trading-warning';
-      case 'CANCELLED':
-        return 'bg-trading-red';
+      case "EXECUTED":
+        return "bg-trading-green";
+      case "PENDING":
+        return "bg-trading-warning";
+      case "CANCELLED":
+        return "bg-trading-red";
       default:
-        return 'bg-trading-neutral';
+        return "bg-trading-neutral";
     }
   };
 
@@ -123,12 +122,18 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
               <div className="border rounded-lg p-4 bg-primary/5">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold">{coinData.coin.symbol}</h3>
-                  <Badge className="bg-primary text-white">{coinData.overallSignal}</Badge>
+                  <Badge className="bg-primary text-white">
+                    {coinData.overallSignal}
+                  </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">{coinData.coin.name}</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {coinData.coin.name}
+                </p>
                 <div className="flex items-center gap-4">
                   <span className="text-sm">Price: ${coinData.coin.price}</span>
-                  <span className="text-sm">Confidence: {coinData.overallConfidence}%</span>
+                  <span className="text-sm">
+                    Confidence: {coinData.overallConfidence}%
+                  </span>
                 </div>
               </div>
 
@@ -167,27 +172,31 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
                   </div>
                 </div>
 
-                <Button 
-                  onClick={calculateOptimalLevels} 
-                  variant="outline" 
+                <Button
+                  onClick={calculateOptimalLevels}
+                  variant="outline"
                   className="w-full"
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   AI Optimize Levels
                 </Button>
 
-                <Button 
-                  onClick={handleCreateTrade} 
+                <Button
+                  onClick={handleCreateTrade}
                   className="w-full"
                   disabled={createTradeMutation.isPending}
                 >
-                  {createTradeMutation.isPending ? 'Creating...' : 'Create Automated Trade'}
+                  {createTradeMutation.isPending
+                    ? "Creating..."
+                    : "Create Automated Trade"}
                 </Button>
               </div>
             </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">Select a validated coin to set up automated trading.</p>
+              <p className="text-muted-foreground">
+                Select a validated coin to set up automated trading.
+              </p>
             </div>
           )}
         </CardContent>
@@ -216,7 +225,7 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => cancelTradeMutation.mutate(trade.id)}
-                    disabled={trade.status !== 'PENDING'}
+                    disabled={trade.status !== "PENDING"}
                   >
                     Cancel
                   </Button>
@@ -224,7 +233,9 @@ export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>Amount:</span>
-                    <span>{trade.amount} {trade.coin?.symbol}</span>
+                    <span>
+                      {trade.amount} {trade.coin?.symbol}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Entry Price:</span>

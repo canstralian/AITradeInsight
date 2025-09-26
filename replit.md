@@ -11,6 +11,7 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
+
 - **Framework**: React with TypeScript using Vite for fast development
 - **UI Library**: Radix UI components with shadcn/ui for consistent, accessible design
 - **Styling**: Tailwind CSS with custom CSS variables for theming
@@ -19,6 +20,7 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite with custom configuration for development and production builds
 
 ### Backend Architecture
+
 - **Runtime**: Node.js with Express.js server
 - **Language**: TypeScript throughout the stack
 - **API Design**: RESTful API with structured error handling
@@ -27,6 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **Session Management**: Express sessions with PostgreSQL session store
 
 ### Data Storage Solutions
+
 - **Primary Database**: PostgreSQL hosted on Neon
 - **ORM**: Drizzle ORM with migrations support
 - **Schema**: Structured tables for users, stocks, portfolios, watchlists, AI predictions, trading signals, and market sentiment
@@ -35,7 +38,9 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Database Schema
+
 The application uses a comprehensive database schema including:
+
 - **Users**: Authentication and user management
 - **Stocks**: Stock data with real-time pricing information
 - **Portfolios**: User portfolio tracking with P&L calculations
@@ -45,6 +50,7 @@ The application uses a comprehensive database schema including:
 - **Market Sentiment**: Overall market sentiment analysis
 
 ### Frontend Components
+
 - **Dashboard**: Main trading interface with multiple data visualization components
 - **Portfolio Overview**: Real-time portfolio performance tracking
 - **Price Charts**: Interactive stock price visualization with technical indicators
@@ -54,6 +60,7 @@ The application uses a comprehensive database schema including:
 - **Market Sentiment**: Market-wide sentiment analysis visualization
 
 ### API Endpoints
+
 - Stock data retrieval and search functionality
 - Portfolio management and tracking
 - Watchlist operations (add/remove stocks)
@@ -73,14 +80,16 @@ The application uses a comprehensive database schema including:
 ## External Dependencies
 
 ### Core Dependencies
+
 - **@neondatabase/serverless**: Serverless PostgreSQL connection
 - **drizzle-orm**: Type-safe database operations
 - **@tanstack/react-query**: Server state management
-- **@radix-ui/***: Accessible UI component primitives
+- **@radix-ui/\***: Accessible UI component primitives
 - **tailwindcss**: Utility-first CSS framework
 - **wouter**: Lightweight routing library
 
 ### Development Dependencies
+
 - **vite**: Fast build tool and development server
 - **typescript**: Type safety throughout the stack
 - **drizzle-kit**: Database migration and schema management
@@ -89,16 +98,18 @@ The application uses a comprehensive database schema including:
 ## Deployment Strategy
 
 ### Development Environment
+
 - **Local Development**: Vite dev server with hot module replacement
 - **Database**: Neon serverless PostgreSQL with environment-based configuration
 - **Environment Variables**: DATABASE_URL for database connection
 - **Build Process**: Vite for frontend, esbuild for backend bundling
 
 ### Production Deployment
+
 - **Frontend**: Static assets built with Vite and served via Express
 - **Backend**: Node.js server with bundled dependencies
 - **Database**: Neon serverless PostgreSQL for scalability
-- **Build Commands**: 
+- **Build Commands**:
   - `npm run build`: Creates production-ready frontend and backend bundles
   - `npm run start`: Runs production server
   - `npm run db:push`: Applies database schema changes
@@ -106,24 +117,28 @@ The application uses a comprehensive database schema including:
 ### Architecture Decisions
 
 **Database Choice**: PostgreSQL with Drizzle ORM was chosen for:
+
 - Type safety with TypeScript integration
 - Robust relational data modeling for complex trading data
 - Serverless scaling with Neon Database
 - Advanced query capabilities for financial data analysis
 
 **Frontend State Management**: TanStack Query provides:
+
 - Automatic caching and background updates
 - Optimistic updates for better UX
 - Error handling and retry logic
 - Minimal boilerplate compared to Redux
 
 **UI Component Strategy**: Radix UI + shadcn/ui offers:
+
 - Accessibility compliance out of the box
 - Consistent design system
 - Customizable theming with CSS variables
 - Minimal bundle size impact
 
 **Real-time Updates**: Polling-based updates chosen over WebSockets for:
+
 - Simpler implementation and debugging
 - Better compatibility with serverless deployments
 - Easier error handling and recovery

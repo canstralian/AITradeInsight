@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { tradingApi } from "@/lib/trading-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Brain } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge"; // Added Badge import
@@ -11,23 +17,27 @@ export function AiPredictions() {
   const [selectedStockId, setSelectedStockId] = useState<number>(1);
 
   const { data: predictions, isLoading } = useQuery({
-    queryKey: ['/api/predictions'],
+    queryKey: ["/api/predictions"],
     queryFn: tradingApi.getAiPredictions,
   });
 
   const { data: stocks } = useQuery({
-    queryKey: ['/api/stocks'],
+    queryKey: ["/api/stocks"],
     queryFn: tradingApi.getStocks,
   });
 
-  const selectedPrediction = predictions?.find(p => p.stockId === selectedStockId);
-  const selectedStock = stocks?.find(s => s.id === selectedStockId);
+  const selectedPrediction = predictions?.find(
+    (p) => p.stockId === selectedStockId,
+  );
+  const selectedStock = stocks?.find((s) => s.id === selectedStockId);
 
   if (isLoading) {
     return (
       <Card className="trading-card card-hover bg-card/80 border-border/50">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold gradient-text">AI Price Prediction</CardTitle>
+          <CardTitle className="text-lg font-semibold gradient-text">
+            AI Price Prediction
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -53,7 +63,10 @@ export function AiPredictions() {
             <Brain className="w-5 h-5 text-primary" />
             AI Price Prediction
           </CardTitle>
-          <Select value={selectedStockId.toString()} onValueChange={(value) => setSelectedStockId(parseInt(value))}>
+          <Select
+            value={selectedStockId.toString()}
+            onValueChange={(value) => setSelectedStockId(parseInt(value))}
+          >
             <SelectTrigger className="w-20">
               <SelectValue />
             </SelectTrigger>
@@ -71,24 +84,36 @@ export function AiPredictions() {
         {selectedPrediction && selectedStock ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-trading-neutral">Current Price</span>
+              <span className="text-sm text-trading-neutral">
+                Current Price
+              </span>
               <span className="font-mono">${selectedStock.price}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-trading-neutral">24h Prediction</span>
-              <span className="font-mono text-trading-green">${selectedPrediction.prediction24h}</span>
+              <span className="text-sm text-trading-neutral">
+                24h Prediction
+              </span>
+              <span className="font-mono text-trading-green">
+                ${selectedPrediction.prediction24h}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-trading-neutral">7d Prediction</span>
-              <span className="font-mono text-trading-green">${selectedPrediction.prediction7d}</span>
+              <span className="text-sm text-trading-neutral">
+                7d Prediction
+              </span>
+              <span className="font-mono text-trading-green">
+                ${selectedPrediction.prediction7d}
+              </span>
             </div>
             <div className="ai-confidence-bar">
-              <div 
-                className="ai-confidence-fill" 
+              <div
+                className="ai-confidence-fill"
                 style={{ width: `${selectedPrediction.confidence}%` }}
               />
             </div>
-            <div className="text-xs text-trading-neutral text-center text-primary"> {/* Added text-primary class */}
+            <div className="text-xs text-trading-neutral text-center text-primary">
+              {" "}
+              {/* Added text-primary class */}
               {selectedPrediction.confidence}% Confidence Score
             </div>
           </div>

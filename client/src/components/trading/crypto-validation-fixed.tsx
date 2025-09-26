@@ -12,19 +12,22 @@ interface CryptoValidationProps {
   onTradeSetup: (coinData: any) => void;
 }
 
-export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps) {
+export function CryptoValidation({
+  coinId,
+  onTradeSetup,
+}: CryptoValidationProps) {
   // Mock validation data for now
   const validation = {
-    coin: { symbol: 'BTC' },
+    coin: { symbol: "BTC" },
     socialScore: 85,
-    socialAnalysis: 'Strong positive sentiment across social platforms',
+    socialAnalysis: "Strong positive sentiment across social platforms",
     technicalScore: 92,
-    technicalAnalysis: 'Bullish technical indicators with strong momentum',
+    technicalAnalysis: "Bullish technical indicators with strong momentum",
     whaleActivity: 78,
-    whaleAnalysis: 'Large holders accumulating, low distribution risk',
-    overallSignal: 'BUY' as const,
-    recommendation: 'Strong buy signal with high confidence across all metrics',
-    overallConfidence: 88
+    whaleAnalysis: "Large holders accumulating, low distribution risk",
+    overallSignal: "BUY" as const,
+    recommendation: "Strong buy signal with high confidence across all metrics",
+    overallConfidence: 88,
   };
 
   if (!coinId) {
@@ -34,7 +37,9 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
           <CardTitle>Select a coin to validate</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Choose a coin from the radar to see detailed AI validation.</p>
+          <p className="text-muted-foreground">
+            Choose a coin from the radar to see detailed AI validation.
+          </p>
         </CardContent>
       </Card>
     );
@@ -57,7 +62,9 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
             <Badge variant="outline">{validation.socialScore}/100</Badge>
           </div>
           <Progress value={validation.socialScore} className="mb-2" />
-          <p className="text-sm text-muted-foreground">{validation.socialAnalysis}</p>
+          <p className="text-sm text-muted-foreground">
+            {validation.socialAnalysis}
+          </p>
         </div>
 
         {/* Technical Analysis */}
@@ -68,7 +75,9 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
             <Badge variant="outline">{validation.technicalScore}/100</Badge>
           </div>
           <Progress value={validation.technicalScore} className="mb-2" />
-          <p className="text-sm text-muted-foreground">{validation.technicalAnalysis}</p>
+          <p className="text-sm text-muted-foreground">
+            {validation.technicalAnalysis}
+          </p>
         </div>
 
         {/* Whale Activity */}
@@ -79,7 +88,9 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
             <Badge variant="outline">{validation.whaleActivity}/100</Badge>
           </div>
           <Progress value={validation.whaleActivity} className="mb-2" />
-          <p className="text-sm text-muted-foreground">{validation.whaleAnalysis}</p>
+          <p className="text-sm text-muted-foreground">
+            {validation.whaleAnalysis}
+          </p>
         </div>
 
         {/* AI Recommendation */}
@@ -87,20 +98,24 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="h-4 w-4 text-primary" />
             <h3 className="font-semibold">AI Recommendation</h3>
-            <Badge className="bg-primary text-white">{validation.overallSignal}</Badge>
+            <Badge className="bg-primary text-white">
+              {validation.overallSignal}
+            </Badge>
           </div>
           <p className="text-sm mb-4">{validation.recommendation}</p>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Overall Confidence:</span>
+            <span className="text-sm text-muted-foreground">
+              Overall Confidence:
+            </span>
             <Badge variant="outline">{validation.overallConfidence}%</Badge>
           </div>
         </div>
 
         {/* Trade Setup Button */}
-        <Button 
-          onClick={() => onTradeSetup(validation)} 
+        <Button
+          onClick={() => onTradeSetup(validation)}
           className="w-full"
-          disabled={validation.overallSignal === 'SELL'}
+          disabled={validation.overallSignal === "SELL"}
         >
           Set Up Automated Trade
         </Button>

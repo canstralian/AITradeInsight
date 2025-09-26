@@ -6,20 +6,20 @@ import { setupAuth } from "./replitAuth";
 import { registerRoutes } from "./routes";
 
 // Import middleware
-import { 
-  errorHandler, 
-  notFoundHandler, 
+import {
+  errorHandler,
+  notFoundHandler,
   requestIdMiddleware,
   handleUnhandledRejections,
-  handleUncaughtExceptions 
+  handleUncaughtExceptions,
 } from "./middleware/errorHandler";
 import { requestLogger, logger } from "./middleware/logger";
-import { 
-  securityHeaders, 
-  corsOptions, 
-  generalRateLimit, 
+import {
+  securityHeaders,
+  corsOptions,
+  generalRateLimit,
   sanitizeRequest,
-  apiSecurityHeaders 
+  apiSecurityHeaders,
 } from "./middleware/security";
 
 // Handle unhandled rejections and exceptions
@@ -30,7 +30,7 @@ const app = express();
 const server = createServer(app);
 
 // Trust proxy if behind reverse proxy (Replit, nginx, etc.)
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // Request ID middleware (must be first)
 app.use(requestIdMiddleware);
@@ -46,22 +46,22 @@ app.use(cors(corsOptions));
 app.use(generalRateLimit);
 
 // Request parsing with size limits
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Request sanitization
 app.use(sanitizeRequest);
 
 // API security headers for API routes
-app.use('/api', apiSecurityHeaders);
+app.use("/api", apiSecurityHeaders);
 
 // Health check endpoint (before auth)
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.json({
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env.NODE_ENV || "development",
+    version: process.env.npm_package_version || "1.0.0",
   });
 });
 
@@ -86,25 +86,26 @@ async function startServer() {
 
   // Graceful shutdown handling
   const gracefulShutdown = () => {
-    logger.info('Received shutdown signal, closing server gracefully...');
+    logger.info("Received shutdown signal, closing server gracefully...");
 
     server.close(() => {
-      logger.info('Server closed successfully');
+      logger.info("Server closed successfully");
       process.exit(0);
     });
 
     // Force close after 30 seconds
     setTimeout(() => {
-      logger.error('Forcing server shutdown after timeout');
+      logger.error("Forcing server shutdown after timeout");
       process.exit(1);
     }, 30000);
   };
 
-  process.on('SIGTERM', gracefulShutdown);
-  process.on('SIGINT', gracefulShutdown);
+  process.on("SIGTERM", gracefulShutdown);
+  process.on("SIGINT", gracefulShutdown);
 
   server.listen(Number(PORT), "0.0.0.0", () => {
-    const mode = process.env.NODE_ENV === "production" ? "production" : "development";
+    const mode =
+      process.env.NODE_ENV === "production" ? "production" : "development";
     logger.info(`Server starting`, {
       port: PORT,
       mode,
@@ -119,6 +120,6 @@ async function startServer() {
 
 // Start the server
 startServer().catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error("Failed to start server:", error);
   process.exit(1);
 });

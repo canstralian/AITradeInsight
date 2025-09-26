@@ -11,17 +11,18 @@ export function Watchlist() {
   const { toast } = useToast();
 
   const { data: watchlist, isLoading } = useQuery({
-    queryKey: ['/api/watchlist'],
+    queryKey: ["/api/watchlist"],
     queryFn: tradingApi.getWatchlist,
   });
 
   const removeFromWatchlistMutation = useMutation({
     mutationFn: (stockId: number) => tradingApi.removeFromWatchlist(stockId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/watchlist'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/watchlist"] });
       toast({
         title: "Stock removed from watchlist",
-        description: "The stock has been successfully removed from your watchlist.",
+        description:
+          "The stock has been successfully removed from your watchlist.",
       });
     },
     onError: () => {
@@ -46,7 +47,10 @@ export function Watchlist() {
         <CardContent>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-lg border"
+              >
                 <div className="flex items-center space-x-3">
                   <Skeleton className="w-10 h-10 rounded-lg" />
                   <div>
@@ -98,14 +102,19 @@ export function Watchlist() {
                     </div>
                     <div>
                       <div className="font-medium">{item.stock.name}</div>
-                      <div className="text-sm text-trading-neutral">{item.stock.sector}</div>
+                      <div className="text-sm text-trading-neutral">
+                        {item.stock.sector}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="text-right">
                       <div className="font-mono">${item.stock.price}</div>
-                      <div className={`text-sm ${isPositive ? 'text-trading-green' : 'text-trading-red'}`}>
-                        {isPositive ? '+' : ''}{item.stock.changePercent}%
+                      <div
+                        className={`text-sm ${isPositive ? "text-trading-green" : "text-trading-red"}`}
+                      >
+                        {isPositive ? "+" : ""}
+                        {item.stock.changePercent}%
                       </div>
                     </div>
                     <Button
@@ -125,7 +134,9 @@ export function Watchlist() {
         ) : (
           <div className="text-center text-trading-neutral">
             <p>Your watchlist is empty</p>
-            <p className="text-sm mt-1">Add stocks to track their performance</p>
+            <p className="text-sm mt-1">
+              Add stocks to track their performance
+            </p>
           </div>
         )}
       </CardContent>

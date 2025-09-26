@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tradingApi } from "@/lib/trading-api";
@@ -6,23 +5,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Building2, 
-  Calendar, 
-  FileText, 
-  Settings, 
-  Download, 
-  Mail, 
-  Sync, 
+import {
+  Building2,
+  Calendar,
+  FileText,
+  Settings,
+  Download,
+  Mail,
+  Sync,
   Plus,
   AlertCircle,
   TrendingUp,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 
 export function IntegrationDashboard() {
@@ -31,20 +36,20 @@ export function IntegrationDashboard() {
     apiKey: "",
     apiSecret: "",
     accountId: "",
-    accountName: ""
+    accountName: "",
   });
   const [reportConfig, setReportConfig] = useState({
     name: "",
     frequency: "WEEKLY",
     format: "PDF",
     emailEnabled: false,
-    emailRecipients: ""
+    emailRecipients: "",
   });
   const [calendarAlerts, setCalendarAlerts] = useState({
     earningsAlerts: true,
     economicAlerts: true,
     dividendAlerts: true,
-    alertTiming: 1
+    alertTiming: 1,
   });
 
   const { toast } = useToast();
@@ -52,64 +57,83 @@ export function IntegrationDashboard() {
 
   // Queries
   const { data: brokerAccounts } = useQuery({
-    queryKey: ['/api/brokers/accounts'],
+    queryKey: ["/api/brokers/accounts"],
     queryFn: () => tradingApi.getBrokerAccounts?.() || Promise.resolve([]),
   });
 
   const { data: upcomingEvents } = useQuery({
-    queryKey: ['/api/calendar/upcoming'],
-    queryFn: () => tradingApi.getUpcomingEvents?.() || Promise.resolve({ earnings: [], economic: [], dividends: [] }),
+    queryKey: ["/api/calendar/upcoming"],
+    queryFn: () =>
+      tradingApi.getUpcomingEvents?.() ||
+      Promise.resolve({ earnings: [], economic: [], dividends: [] }),
   });
 
   const { data: consolidatedPortfolio } = useQuery({
-    queryKey: ['/api/brokers/portfolio'],
-    queryFn: () => tradingApi.getConsolidatedPortfolio?.() || Promise.resolve(null),
+    queryKey: ["/api/brokers/portfolio"],
+    queryFn: () =>
+      tradingApi.getConsolidatedPortfolio?.() || Promise.resolve(null),
   });
 
   // Mutations
   const connectBrokerMutation = useMutation({
-    mutationFn: (credentials: any) => tradingApi.connectBroker?.(credentials) || Promise.resolve({}),
+    mutationFn: (credentials: any) =>
+      tradingApi.connectBroker?.(credentials) || Promise.resolve({}),
     onSuccess: () => {
       toast({
         title: "Broker Connected",
         description: "Your broker account has been successfully connected!",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/brokers/accounts'] });
-      setBrokerCredentials({ apiKey: "", apiSecret: "", accountId: "", accountName: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/brokers/accounts"] });
+      setBrokerCredentials({
+        apiKey: "",
+        apiSecret: "",
+        accountId: "",
+        accountName: "",
+      });
     },
     onError: () => {
       toast({
         title: "Connection Failed",
-        description: "Failed to connect broker account. Please check your credentials.",
+        description:
+          "Failed to connect broker account. Please check your credentials.",
         variant: "destructive",
       });
     },
   });
 
   const syncBrokerMutation = useMutation({
-    mutationFn: (accountId: string) => tradingApi.syncBrokerAccount?.(accountId) || Promise.resolve({}),
+    mutationFn: (accountId: string) =>
+      tradingApi.syncBrokerAccount?.(accountId) || Promise.resolve({}),
     onSuccess: () => {
       toast({
         title: "Sync Complete",
         description: "Broker account synchronized successfully!",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/brokers/portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/brokers/portfolio"] });
     },
   });
 
   const createReportMutation = useMutation({
-    mutationFn: (config: any) => tradingApi.createReport?.(config) || Promise.resolve({}),
+    mutationFn: (config: any) =>
+      tradingApi.createReport?.(config) || Promise.resolve({}),
     onSuccess: () => {
       toast({
         title: "Report Created",
         description: "Your report configuration has been saved!",
       });
-      setReportConfig({ name: "", frequency: "WEEKLY", format: "PDF", emailEnabled: false, emailRecipients: "" });
+      setReportConfig({
+        name: "",
+        frequency: "WEEKLY",
+        format: "PDF",
+        emailEnabled: false,
+        emailRecipients: "",
+      });
     },
   });
 
   const setupAlertsMutation = useMutation({
-    mutationFn: (preferences: any) => tradingApi.setupCalendarAlerts?.(preferences) || Promise.resolve({}),
+    mutationFn: (preferences: any) =>
+      tradingApi.setupCalendarAlerts?.(preferences) || Promise.resolve({}),
     onSuccess: () => {
       toast({
         title: "Alerts Configured",
@@ -119,7 +143,11 @@ export function IntegrationDashboard() {
   });
 
   const handleConnectBroker = () => {
-    if (!selectedBroker || !brokerCredentials.apiKey || !brokerCredentials.apiSecret) {
+    if (
+      !selectedBroker ||
+      !brokerCredentials.apiKey ||
+      !brokerCredentials.apiSecret
+    ) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -130,7 +158,7 @@ export function IntegrationDashboard() {
 
     connectBrokerMutation.mutate({
       brokerId: selectedBroker,
-      ...brokerCredentials
+      ...brokerCredentials,
     });
   };
 
@@ -146,21 +174,43 @@ export function IntegrationDashboard() {
 
     createReportMutation.mutate({
       name: reportConfig.name,
-      type: 'PERFORMANCE',
+      type: "PERFORMANCE",
       frequency: reportConfig.frequency,
       format: reportConfig.format,
       delivery: {
         email: reportConfig.emailEnabled,
         download: true,
-        emailRecipients: reportConfig.emailRecipients.split(',').map(email => email.trim())
+        emailRecipients: reportConfig.emailRecipients
+          .split(",")
+          .map((email) => email.trim()),
       },
       sections: [
-        { type: 'PORTFOLIO_SUMMARY', title: 'Portfolio Summary', config: {}, order: 1 },
-        { type: 'PERFORMANCE_METRICS', title: 'Performance Metrics', config: {}, order: 2 },
-        { type: 'TRADE_ANALYSIS', title: 'Trade Analysis', config: {}, order: 3 },
-        { type: 'MARKET_OUTLOOK', title: 'Market Outlook', config: {}, order: 4 }
+        {
+          type: "PORTFOLIO_SUMMARY",
+          title: "Portfolio Summary",
+          config: {},
+          order: 1,
+        },
+        {
+          type: "PERFORMANCE_METRICS",
+          title: "Performance Metrics",
+          config: {},
+          order: 2,
+        },
+        {
+          type: "TRADE_ANALYSIS",
+          title: "Trade Analysis",
+          config: {},
+          order: 3,
+        },
+        {
+          type: "MARKET_OUTLOOK",
+          title: "Market Outlook",
+          config: {},
+          order: 4,
+        },
       ],
-      isActive: true
+      isActive: true,
     });
   };
 
@@ -203,14 +253,21 @@ export function IntegrationDashboard() {
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="broker-select">Select Broker</Label>
-                  <Select value={selectedBroker} onValueChange={setSelectedBroker}>
+                  <Select
+                    value={selectedBroker}
+                    onValueChange={setSelectedBroker}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a broker" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="alpaca">Alpaca</SelectItem>
-                      <SelectItem value="interactive-brokers">Interactive Brokers</SelectItem>
-                      <SelectItem value="td-ameritrade">TD Ameritrade</SelectItem>
+                      <SelectItem value="interactive-brokers">
+                        Interactive Brokers
+                      </SelectItem>
+                      <SelectItem value="td-ameritrade">
+                        TD Ameritrade
+                      </SelectItem>
                       <SelectItem value="schwab">Charles Schwab</SelectItem>
                     </SelectContent>
                   </Select>
@@ -221,7 +278,12 @@ export function IntegrationDashboard() {
                   <Input
                     id="account-name"
                     value={brokerCredentials.accountName}
-                    onChange={(e) => setBrokerCredentials(prev => ({ ...prev, accountName: e.target.value }))}
+                    onChange={(e) =>
+                      setBrokerCredentials((prev) => ({
+                        ...prev,
+                        accountName: e.target.value,
+                      }))
+                    }
                     placeholder="My Trading Account"
                   />
                 </div>
@@ -231,7 +293,12 @@ export function IntegrationDashboard() {
                   <Input
                     id="account-id"
                     value={brokerCredentials.accountId}
-                    onChange={(e) => setBrokerCredentials(prev => ({ ...prev, accountId: e.target.value }))}
+                    onChange={(e) =>
+                      setBrokerCredentials((prev) => ({
+                        ...prev,
+                        accountId: e.target.value,
+                      }))
+                    }
                     placeholder="Enter your account ID"
                   />
                 </div>
@@ -242,7 +309,12 @@ export function IntegrationDashboard() {
                     id="api-key"
                     type="password"
                     value={brokerCredentials.apiKey}
-                    onChange={(e) => setBrokerCredentials(prev => ({ ...prev, apiKey: e.target.value }))}
+                    onChange={(e) =>
+                      setBrokerCredentials((prev) => ({
+                        ...prev,
+                        apiKey: e.target.value,
+                      }))
+                    }
                     placeholder="Enter your API key"
                   />
                 </div>
@@ -253,12 +325,17 @@ export function IntegrationDashboard() {
                     id="api-secret"
                     type="password"
                     value={brokerCredentials.apiSecret}
-                    onChange={(e) => setBrokerCredentials(prev => ({ ...prev, apiSecret: e.target.value }))}
+                    onChange={(e) =>
+                      setBrokerCredentials((prev) => ({
+                        ...prev,
+                        apiSecret: e.target.value,
+                      }))
+                    }
                     placeholder="Enter your API secret"
                   />
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleConnectBroker}
                   disabled={connectBrokerMutation.isPending}
                   className="w-full"
@@ -275,28 +352,39 @@ export function IntegrationDashboard() {
               </CardHeader>
               <CardContent>
                 {brokerAccounts?.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No broker accounts connected</p>
+                  <p className="text-gray-500 text-center py-8">
+                    No broker accounts connected
+                  </p>
                 ) : (
                   <div className="space-y-4">
                     {brokerAccounts?.map((account: any) => (
-                      <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={account.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div>
-                          <div className="font-semibold">{account.accountName}</div>
+                          <div className="font-semibold">
+                            {account.accountName}
+                          </div>
                           <div className="text-sm text-gray-500">
                             {account.brokerId} • {account.accountId}
                           </div>
                           <div className="text-sm">
-                            Balance: ${account.balance?.toLocaleString() || '0'}
+                            Balance: ${account.balance?.toLocaleString() || "0"}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant={account.isActive ? "default" : "secondary"}>
+                          <Badge
+                            variant={account.isActive ? "default" : "secondary"}
+                          >
                             {account.isActive ? "Active" : "Inactive"}
                           </Badge>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
-                            onClick={() => syncBrokerMutation.mutate(account.id)}
+                            onClick={() =>
+                              syncBrokerMutation.mutate(account.id)
+                            }
                             disabled={syncBrokerMutation.isPending}
                           >
                             <Sync className="w-4 h-4" />
@@ -319,13 +407,17 @@ export function IntegrationDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      ${consolidatedPortfolio.totalValue?.toLocaleString() || '0'}
+                      $
+                      {consolidatedPortfolio.totalValue?.toLocaleString() ||
+                        "0"}
                     </div>
                     <div className="text-sm text-gray-600">Total Value</div>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className={`text-2xl font-bold ${consolidatedPortfolio.totalPL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ${consolidatedPortfolio.totalPL?.toLocaleString() || '0'}
+                    <div
+                      className={`text-2xl font-bold ${consolidatedPortfolio.totalPL >= 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      ${consolidatedPortfolio.totalPL?.toLocaleString() || "0"}
                     </div>
                     <div className="text-sm text-gray-600">Total P&L</div>
                   </div>
@@ -333,7 +425,9 @@ export function IntegrationDashboard() {
                     <div className="text-2xl font-bold text-purple-600">
                       {consolidatedPortfolio.accounts?.length || 0}
                     </div>
-                    <div className="text-sm text-gray-600">Connected Accounts</div>
+                    <div className="text-sm text-gray-600">
+                      Connected Accounts
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -353,7 +447,12 @@ export function IntegrationDashboard() {
                   <Switch
                     id="earnings-alerts"
                     checked={calendarAlerts.earningsAlerts}
-                    onCheckedChange={(checked) => setCalendarAlerts(prev => ({ ...prev, earningsAlerts: checked }))}
+                    onCheckedChange={(checked) =>
+                      setCalendarAlerts((prev) => ({
+                        ...prev,
+                        earningsAlerts: checked,
+                      }))
+                    }
                   />
                 </div>
 
@@ -362,7 +461,12 @@ export function IntegrationDashboard() {
                   <Switch
                     id="economic-alerts"
                     checked={calendarAlerts.economicAlerts}
-                    onCheckedChange={(checked) => setCalendarAlerts(prev => ({ ...prev, economicAlerts: checked }))}
+                    onCheckedChange={(checked) =>
+                      setCalendarAlerts((prev) => ({
+                        ...prev,
+                        economicAlerts: checked,
+                      }))
+                    }
                   />
                 </div>
 
@@ -371,15 +475,27 @@ export function IntegrationDashboard() {
                   <Switch
                     id="dividend-alerts"
                     checked={calendarAlerts.dividendAlerts}
-                    onCheckedChange={(checked) => setCalendarAlerts(prev => ({ ...prev, dividendAlerts: checked }))}
+                    onCheckedChange={(checked) =>
+                      setCalendarAlerts((prev) => ({
+                        ...prev,
+                        dividendAlerts: checked,
+                      }))
+                    }
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="alert-timing">Alert Timing (days before)</Label>
-                  <Select 
-                    value={calendarAlerts.alertTiming.toString()} 
-                    onValueChange={(value) => setCalendarAlerts(prev => ({ ...prev, alertTiming: parseInt(value) }))}
+                  <Label htmlFor="alert-timing">
+                    Alert Timing (days before)
+                  </Label>
+                  <Select
+                    value={calendarAlerts.alertTiming.toString()}
+                    onValueChange={(value) =>
+                      setCalendarAlerts((prev) => ({
+                        ...prev,
+                        alertTiming: parseInt(value),
+                      }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -393,7 +509,7 @@ export function IntegrationDashboard() {
                   </Select>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleSetupAlerts}
                   disabled={setupAlertsMutation.isPending}
                   className="w-full"
@@ -417,15 +533,22 @@ export function IntegrationDashboard() {
                         Earnings Reports
                       </h4>
                       {upcomingEvents.earnings.slice(0, 3).map((event: any) => (
-                        <div key={event.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div
+                          key={event.id}
+                          className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                        >
                           <div>
                             <div className="font-medium">{event.symbol}</div>
-                            <div className="text-sm text-gray-600">{event.companyName}</div>
+                            <div className="text-sm text-gray-600">
+                              {event.companyName}
+                            </div>
                           </div>
                           <div className="text-sm text-right">
-                            <div>{new Date(event.reportDate).toLocaleDateString()}</div>
+                            <div>
+                              {new Date(event.reportDate).toLocaleDateString()}
+                            </div>
                             <Badge variant="outline" className="text-xs">
-                              {event.aiPrediction?.recommendation || 'HOLD'}
+                              {event.aiPrediction?.recommendation || "HOLD"}
                             </Badge>
                           </div>
                         </div>
@@ -439,24 +562,40 @@ export function IntegrationDashboard() {
                         <DollarSign className="w-4 h-4 mr-1" />
                         Dividend Events
                       </h4>
-                      {upcomingEvents.dividends.slice(0, 3).map((event: any) => (
-                        <div key={event.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <div>
-                            <div className="font-medium">{event.symbol}</div>
-                            <div className="text-sm text-gray-600">${event.dividendAmount}</div>
+                      {upcomingEvents.dividends
+                        .slice(0, 3)
+                        .map((event: any) => (
+                          <div
+                            key={event.id}
+                            className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                          >
+                            <div>
+                              <div className="font-medium">{event.symbol}</div>
+                              <div className="text-sm text-gray-600">
+                                ${event.dividendAmount}
+                              </div>
+                            </div>
+                            <div className="text-sm text-right">
+                              <div>
+                                {new Date(
+                                  event.exDividendDate,
+                                ).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Ex-Dividend
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-sm text-right">
-                            <div>{new Date(event.exDividendDate).toLocaleDateString()}</div>
-                            <div className="text-xs text-gray-500">Ex-Dividend</div>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
 
-                  {(!upcomingEvents?.earnings?.length && !upcomingEvents?.dividends?.length) && (
-                    <p className="text-gray-500 text-center py-8">No upcoming events for watched stocks</p>
-                  )}
+                  {!upcomingEvents?.earnings?.length &&
+                    !upcomingEvents?.dividends?.length && (
+                      <p className="text-gray-500 text-center py-8">
+                        No upcoming events for watched stocks
+                      </p>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -474,7 +613,12 @@ export function IntegrationDashboard() {
                 <Input
                   id="report-name"
                   value={reportConfig.name}
-                  onChange={(e) => setReportConfig(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setReportConfig((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   placeholder="My Weekly Performance Report"
                 />
               </div>
@@ -482,7 +626,12 @@ export function IntegrationDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="frequency">Frequency</Label>
-                  <Select value={reportConfig.frequency} onValueChange={(value) => setReportConfig(prev => ({ ...prev, frequency: value }))}>
+                  <Select
+                    value={reportConfig.frequency}
+                    onValueChange={(value) =>
+                      setReportConfig((prev) => ({ ...prev, frequency: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -497,7 +646,12 @@ export function IntegrationDashboard() {
 
                 <div>
                   <Label htmlFor="format">Format</Label>
-                  <Select value={reportConfig.format} onValueChange={(value) => setReportConfig(prev => ({ ...prev, format: value }))}>
+                  <Select
+                    value={reportConfig.format}
+                    onValueChange={(value) =>
+                      setReportConfig((prev) => ({ ...prev, format: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -514,7 +668,12 @@ export function IntegrationDashboard() {
                 <Switch
                   id="email-enabled"
                   checked={reportConfig.emailEnabled}
-                  onCheckedChange={(checked) => setReportConfig(prev => ({ ...prev, emailEnabled: checked }))}
+                  onCheckedChange={(checked) =>
+                    setReportConfig((prev) => ({
+                      ...prev,
+                      emailEnabled: checked,
+                    }))
+                  }
                 />
                 <Label htmlFor="email-enabled">Email delivery</Label>
               </div>
@@ -525,13 +684,18 @@ export function IntegrationDashboard() {
                   <Input
                     id="email-recipients"
                     value={reportConfig.emailRecipients}
-                    onChange={(e) => setReportConfig(prev => ({ ...prev, emailRecipients: e.target.value }))}
+                    onChange={(e) =>
+                      setReportConfig((prev) => ({
+                        ...prev,
+                        emailRecipients: e.target.value,
+                      }))
+                    }
                     placeholder="email1@example.com, email2@example.com"
                   />
                 </div>
               )}
 
-              <Button 
+              <Button
                 onClick={handleCreateReport}
                 disabled={createReportMutation.isPending}
                 className="w-full"

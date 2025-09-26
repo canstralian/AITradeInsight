@@ -8,92 +8,139 @@ import { AIService } from "./aiService";
 import { rateLimiters } from "./rateLimiter";
 import { MFAService } from "./mfaService";
 import { TradingLimitsService } from "./tradingLimits";
-import { AuditLogger, auditMiddleware } from './auditLogger';
-import { algoliaMCP } from './mcpService';
+import { AuditLogger, auditMiddleware } from "./auditLogger";
+import { algoliaMCP } from "./mcpService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
 
   // Apply audit middleware to all routes
-  app.use('/api', auditMiddleware);
+  app.use("/api", auditMiddleware);
 
   // MFA routes
-  app.post('/api/auth/mfa/setup', rateLimiters.auth, isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const userEmail = req.user?.claims?.email;
+  app.post(
+    "/api/auth/mfa/setup",
+    rateLimiters.auth,
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const userEmail = req.user?.claims?.email;
 
-      if (!userId || !userEmail) {
-        return res.status(401).json({ message: "User not authenticated" });
+        if (!userId || !userEmail) {
+          return res.status(401).json({ message: "User not authenticated" });
+        }
+
+        const mfaSetup = await MFAService.setupMFA(userId, userEmail);
+
+        await AuditLogger.logAction(
+          userId,
+          "MFA_SETUP_INITIATED",
+          "AUTH",
+          {},
+          req,
+          "MEDIUM",
+        );
+
+        res.json({
+          qrCodeUrl: mfaSetup.qrCodeUrl,
+          backupCodes: mfaSetup.backupCodes,
+        });
+      } catch (error) {
+        console.error("MFA setup error:", error);
+        res.status(500).json({ message: "Failed to setup MFA" });
       }
+    },
+  );
 
-      const mfaSetup = await MFAService.setupMFA(userId, userEmail);
+  app.post(
+    "/api/auth/mfa/verify",
+    rateLimiters.auth,
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const { token } = req.body;
 
-      await AuditLogger.logAction(userId, 'MFA_SETUP_INITIATED', 'AUTH', {}, req, 'MEDIUM');
+        if (!userId || !token) {
+          return res.status(400).json({ message: "Missing required data" });
+        }
 
-      res.json({
-        qrCodeUrl: mfaSetup.qrCodeUrl,
-        backupCodes: mfaSetup.backupCodes,
-      });
-    } catch (error) {
-      console.error("MFA setup error:", error);
-      res.status(500).json({ message: "Failed to setup MFA" });
-    }
-  });
+        const isSetup = await MFAService.completeMFASetup(userId, token);
 
-  app.post('/api/auth/mfa/verify', rateLimiters.auth, isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { token } = req.body;
-
-      if (!userId || !token) {
-        return res.status(400).json({ message: "Missing required data" });
+        if (isSetup) {
+          await AuditLogger.logAction(
+            userId,
+            "MFA_SETUP_COMPLETED",
+            "AUTH",
+            {},
+            req,
+            "HIGH",
+          );
+          res.json({ message: "MFA setup completed successfully" });
+        } else {
+          await AuditLogger.logAction(
+            userId,
+            "MFA_SETUP_FAILED",
+            "AUTH",
+            { token: token.substring(0, 2) + "****" },
+            req,
+            "MEDIUM",
+          );
+          res.status(400).json({ message: "Invalid verification code" });
+        }
+      } catch (error) {
+        console.error("MFA verification error:", error);
+        res.status(500).json({ message: "Failed to verify MFA" });
       }
+    },
+  );
 
-      const isSetup = await MFAService.completeMFASetup(userId, token);
-
-      if (isSetup) {
-        await AuditLogger.logAction(userId, 'MFA_SETUP_COMPLETED', 'AUTH', {}, req, 'HIGH');
-        res.json({ message: "MFA setup completed successfully" });
-      } else {
-        await AuditLogger.logAction(userId, 'MFA_SETUP_FAILED', 'AUTH', { token: token.substring(0, 2) + '****' }, req, 'MEDIUM');
-        res.status(400).json({ message: "Invalid verification code" });
+  app.get(
+    "/api/auth/trading-limits",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const limits = await TradingLimitsService.getUserLimits(userId);
+        res.json(limits);
+      } catch (error) {
+        console.error("Error fetching trading limits:", error);
+        res.status(500).json({ message: "Failed to fetch trading limits" });
       }
-    } catch (error) {
-      console.error("MFA verification error:", error);
-      res.status(500).json({ message: "Failed to verify MFA" });
-    }
-  });
+    },
+  );
 
-  app.get('/api/auth/trading-limits', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const limits = await TradingLimitsService.getUserLimits(userId);
-      res.json(limits);
-    } catch (error) {
-      console.error("Error fetching trading limits:", error);
-      res.status(500).json({ message: "Failed to fetch trading limits" });
-    }
-  });
+  app.post(
+    "/api/auth/trading-limits",
+    rateLimiters.trading,
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const limits = req.body;
 
-  app.post('/api/auth/trading-limits', rateLimiters.trading, isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const limits = req.body;
+        await TradingLimitsService.setUserLimits(userId, limits);
+        await AuditLogger.logAction(
+          userId,
+          "TRADING_LIMITS_UPDATED",
+          "SETTINGS",
+          limits,
+          req,
+          "MEDIUM",
+        );
 
-      await TradingLimitsService.setUserLimits(userId, limits);
-      await AuditLogger.logAction(userId, 'TRADING_LIMITS_UPDATED', 'SETTINGS', limits, req, 'MEDIUM');
-
-      res.json({ message: "Trading limits updated successfully" });
-    } catch (error) {
-      console.error("Error updating trading limits:", error);
-      res.status(500).json({ message: "Failed to update trading limits" });
-    }
-  });
+        res.json({ message: "Trading limits updated successfully" });
+      } catch (error) {
+        console.error("Error updating trading limits:", error);
+        res.status(500).json({ message: "Failed to update trading limits" });
+      }
+    },
+  );
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) {
@@ -125,7 +172,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const query = req.query.q as string;
       if (!query) {
-        return res.status(400).json({ error: "Query parameter 'q' is required" });
+        return res
+          .status(400)
+          .json({ error: "Query parameter 'q' is required" });
       }
 
       const stocks = await storage.searchStocks(query);
@@ -180,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/watchlist", async (req, res) => {
     try {
       const watchlistSchema = insertWatchlistSchema.extend({
-        stockSymbol: z.string().min(1)
+        stockSymbol: z.string().min(1),
       });
 
       const { stockSymbol } = watchlistSchema.parse(req.body);
@@ -194,13 +243,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add to watchlist (userId = 1 for MVP)
       const watchlistItem = await storage.addToWatchlist({
         userId: 1,
-        stockId: stock.id
+        stockId: stock.id,
       });
 
       res.status(201).json(watchlistItem);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+        return res
+          .status(400)
+          .json({ error: "Invalid request data", details: error.errors });
       }
       res.status(500).json({ error: "Failed to add to watchlist" });
     }
@@ -300,11 +351,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const recommendations = predictions
         .sort((a, b) => b.aiScore - a.aiScore)
         .slice(0, 5)
-        .map(prediction => {
-          const stock = stocks.find(s => s.id === prediction.stockId);
+        .map((prediction) => {
+          const stock = stocks.find((s) => s.id === prediction.stockId);
           return { ...prediction, stock };
         })
-        .filter(item => item.stock);
+        .filter((item) => item.stock);
 
       res.json(recommendations);
     } catch (error) {
@@ -330,12 +381,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (let i = 13; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 30 * 60 * 1000); // 30 minutes intervals
         const priceVariation = (Math.random() - 0.5) * 0.02; // ±1% variation
-        const price = basePrice + (basePrice * priceVariation);
+        const price = basePrice + basePrice * priceVariation;
 
         chartData.push({
           time: time.toISOString(),
           price: price.toFixed(2),
-          volume: Math.floor(Math.random() * 1000000) + 500000
+          volume: Math.floor(Math.random() * 1000000) + 500000,
         });
       }
 
@@ -358,10 +409,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(results || []);
       } else if (strategyType) {
         // Filter-based search using MCP service
-        const results = await algoliaMCP.searchByStrategy(strategyType, riskLevel);
+        const results = await algoliaMCP.searchByStrategy(
+          strategyType,
+          riskLevel,
+        );
         res.json(results || []);
       } else {
-        res.status(400).json({ error: "Query or strategy_type parameter is required" });
+        res
+          .status(400)
+          .json({ error: "Query or strategy_type parameter is required" });
       }
     } catch (error) {
       console.error("Strategy search error:", error);
@@ -369,47 +425,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mockStrategies = [
         {
           name: "Momentum Trading Strategy",
-          description: "A strategy that capitalizes on the continuation of existing trends in stock prices.",
+          description:
+            "A strategy that capitalizes on the continuation of existing trends in stock prices.",
           strategy_type: "momentum",
           risk_level: "medium",
           win_rate: "68",
           avg_return: "12.5",
-          key_features: ["Trend following", "Volume analysis", "Moving averages"]
+          key_features: [
+            "Trend following",
+            "Volume analysis",
+            "Moving averages",
+          ],
         },
         {
           name: "Mean Reversion Strategy",
-          description: "Exploits the tendency of stock prices to revert to their historical average.",
+          description:
+            "Exploits the tendency of stock prices to revert to their historical average.",
           strategy_type: "mean_reversion",
           risk_level: "low",
           win_rate: "72",
           avg_return: "8.3",
-          key_features: ["Statistical analysis", "Bollinger Bands", "RSI indicators"]
+          key_features: [
+            "Statistical analysis",
+            "Bollinger Bands",
+            "RSI indicators",
+          ],
         },
         {
           name: "Breakout Trading",
-          description: "Identifies and trades on significant price movements beyond support/resistance levels.",
+          description:
+            "Identifies and trades on significant price movements beyond support/resistance levels.",
           strategy_type: "breakout",
           risk_level: "high",
           win_rate: "58",
           avg_return: "18.7",
-          key_features: ["Volume confirmation", "Pattern recognition", "Stop-loss management"]
-        }
+          key_features: [
+            "Volume confirmation",
+            "Pattern recognition",
+            "Stop-loss management",
+          ],
+        },
       ];
-      
+
       let filteredStrategies = mockStrategies;
       if (query) {
-        filteredStrategies = mockStrategies.filter(s => 
-          s.name.toLowerCase().includes(query.toLowerCase()) ||
-          s.description.toLowerCase().includes(query.toLowerCase())
+        filteredStrategies = mockStrategies.filter(
+          (s) =>
+            s.name.toLowerCase().includes(query.toLowerCase()) ||
+            s.description.toLowerCase().includes(query.toLowerCase()),
         );
       }
       if (strategyType) {
-        filteredStrategies = filteredStrategies.filter(s => s.strategy_type === strategyType);
+        filteredStrategies = filteredStrategies.filter(
+          (s) => s.strategy_type === strategyType,
+        );
       }
       if (riskLevel) {
-        filteredStrategies = filteredStrategies.filter(s => s.risk_level === riskLevel);
+        filteredStrategies = filteredStrategies.filter(
+          (s) => s.risk_level === riskLevel,
+        );
       }
-      
+
       res.json(filteredStrategies);
     }
   });
@@ -423,31 +499,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const recommendedStrategies = [
         {
           name: "AI-Enhanced Momentum Strategy",
-          description: "Machine learning powered momentum strategy with real-time market sentiment analysis.",
+          description:
+            "Machine learning powered momentum strategy with real-time market sentiment analysis.",
           risk_level: "medium",
           win_rate: "74",
           avg_return: "15.2",
-          key_features: ["AI sentiment analysis", "Dynamic stop-loss", "Multi-timeframe analysis"],
-          confidence_score: 95
+          key_features: [
+            "AI sentiment analysis",
+            "Dynamic stop-loss",
+            "Multi-timeframe analysis",
+          ],
+          confidence_score: 95,
         },
         {
           name: "Options Wheel Strategy",
-          description: "Conservative income generation through cash-secured puts and covered calls.",
+          description:
+            "Conservative income generation through cash-secured puts and covered calls.",
           risk_level: "low",
           win_rate: "82",
           avg_return: "12.8",
           key_features: ["Income generation", "Risk management", "Theta decay"],
-          confidence_score: 88
+          confidence_score: 88,
         },
         {
           name: "Swing Trading Pro",
-          description: "Professional swing trading strategy optimized for 3-7 day holding periods.",
+          description:
+            "Professional swing trading strategy optimized for 3-7 day holding periods.",
           risk_level: "medium",
           win_rate: "69",
           avg_return: "16.4",
-          key_features: ["Technical analysis", "Risk/reward optimization", "Market timing"],
-          confidence_score: 91
-        }
+          key_features: [
+            "Technical analysis",
+            "Risk/reward optimization",
+            "Market timing",
+          ],
+          confidence_score: 91,
+        },
       ];
 
       res.json(recommendedStrategies);
@@ -463,7 +550,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const riskLevel = req.query.risk_level as string;
 
       // This endpoint can be an alias to the search endpoint with filters
-      const results = await algoliaMCP.searchByStrategy(strategyType, riskLevel);
+      const results = await algoliaMCP.searchByStrategy(
+        strategyType,
+        riskLevel,
+      );
       res.json(results || []);
     } catch (error) {
       console.error("Strategy filter error:", error);
@@ -471,48 +561,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mockFilteredStrategies = [
         {
           name: "Scalping Master",
-          description: "High-frequency trading strategy for quick profits on small price movements.",
+          description:
+            "High-frequency trading strategy for quick profits on small price movements.",
           strategy_type: "scalping",
           risk_level: "high",
           win_rate: "62",
           avg_return: "25.1",
-          key_features: ["High frequency", "Small profits", "Quick execution"]
+          key_features: ["High frequency", "Small profits", "Quick execution"],
         },
         {
           name: "Day Trading Elite",
-          description: "Professional day trading strategy with advanced risk management.",
+          description:
+            "Professional day trading strategy with advanced risk management.",
           strategy_type: "day_trading",
           risk_level: "medium",
           win_rate: "65",
           avg_return: "19.3",
-          key_features: ["Intraday focus", "Risk management", "Technical indicators"]
-        }
+          key_features: [
+            "Intraday focus",
+            "Risk management",
+            "Technical indicators",
+          ],
+        },
       ];
       res.json(mockFilteredStrategies);
     }
   });
 
   // AI Analysis routes
-  app.get("/api/ai/analyze/:symbol", rateLimiters.aiAnalysis, async (req, res) => {
-    try {
-      const symbol = req.params.symbol.toUpperCase();
-      const stock = await storage.getStockBySymbol(symbol);
+  app.get(
+    "/api/ai/analyze/:symbol",
+    rateLimiters.aiAnalysis,
+    async (req, res) => {
+      try {
+        const symbol = req.params.symbol.toUpperCase();
+        const stock = await storage.getStockBySymbol(symbol);
 
-      if (!stock) {
-        return res.status(404).json({ error: "Stock not found" });
+        if (!stock) {
+          return res.status(404).json({ error: "Stock not found" });
+        }
+
+        const analysis = await AIService.analyzeStock(symbol, stock);
+        res.json({ symbol, analysis });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to generate AI analysis" });
       }
-
-      const analysis = await AIService.analyzeStock(symbol, stock);
-      res.json({ symbol, analysis });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to generate AI analysis" });
-    }
-  });
+    },
+  );
 
   app.get("/api/ai/market-sentiment", async (req, res) => {
     try {
       const stocks = await storage.getStocks();
-      const sentiment = await AIService.generateMarketSentiment(stocks.slice(0, 10));
+      const sentiment = await AIService.generateMarketSentiment(
+        stocks.slice(0, 10),
+      );
       res.json({ sentiment });
     } catch (error) {
       res.status(500).json({ error: "Failed to generate market sentiment" });
@@ -525,19 +627,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const { brokerId, apiKey, apiSecret, accountId, accountName } = req.body;
 
-      const { BrokerIntegrationService } = await import('./brokerIntegration');
-      const account = await BrokerIntegrationService.connectBrokerAccount(userId, {
-        brokerId,
-        apiKey,
-        apiSecret,
-        accountId,
-        accountName
-      });
+      const { BrokerIntegrationService } = await import("./brokerIntegration");
+      const account = await BrokerIntegrationService.connectBrokerAccount(
+        userId,
+        {
+          brokerId,
+          apiKey,
+          apiSecret,
+          accountId,
+          accountName,
+        },
+      );
 
-      await AuditLogger.logAction(userId, 'BROKER_CONNECTED', 'INTEGRATION', { brokerId, accountId }, req, 'HIGH');
+      await AuditLogger.logAction(
+        userId,
+        "BROKER_CONNECTED",
+        "INTEGRATION",
+        { brokerId, accountId },
+        req,
+        "HIGH",
+      );
       res.json(account);
     } catch (error) {
-      console.error('Broker connection error:', error);
+      console.error("Broker connection error:", error);
       res.status(500).json({ error: "Failed to connect broker account" });
     }
   });
@@ -552,24 +664,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/brokers/sync/:accountId", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { accountId } = req.params;
+  app.post(
+    "/api/brokers/sync/:accountId",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const { accountId } = req.params;
 
-      const { BrokerIntegrationService } = await import('./brokerIntegration');
-      await BrokerIntegrationService.syncBrokerAccount(userId, accountId);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to sync broker account" });
-    }
-  });
+        const { BrokerIntegrationService } = await import(
+          "./brokerIntegration"
+        );
+        await BrokerIntegrationService.syncBrokerAccount(userId, accountId);
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to sync broker account" });
+      }
+    },
+  );
 
   app.get("/api/brokers/portfolio", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { BrokerIntegrationService } = await import('./brokerIntegration');
-      const portfolio = await BrokerIntegrationService.getConsolidatedPortfolio(userId);
+      const { BrokerIntegrationService } = await import("./brokerIntegration");
+      const portfolio =
+        await BrokerIntegrationService.getConsolidatedPortfolio(userId);
       res.json(portfolio);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch consolidated portfolio" });
@@ -581,16 +700,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const { accountId, symbol, side, quantity, orderType, price } = req.body;
 
-      const { BrokerIntegrationService } = await import('./brokerIntegration');
-      const trade = await BrokerIntegrationService.executeTradeOrder(userId, accountId, {
-        symbol,
-        side,
-        quantity,
-        orderType,
-        price
-      });
+      const { BrokerIntegrationService } = await import("./brokerIntegration");
+      const trade = await BrokerIntegrationService.executeTradeOrder(
+        userId,
+        accountId,
+        {
+          symbol,
+          side,
+          quantity,
+          orderType,
+          price,
+        },
+      );
 
-      await AuditLogger.logAction(userId, 'TRADE_EXECUTED', 'TRADING', { symbol, side, quantity }, req, 'HIGH');
+      await AuditLogger.logAction(
+        userId,
+        "TRADE_EXECUTED",
+        "TRADING",
+        { symbol, side, quantity },
+        req,
+        "HIGH",
+      );
       res.json(trade);
     } catch (error) {
       res.status(500).json({ error: "Failed to execute trade" });
@@ -600,11 +730,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Calendar Integration routes
   app.get("/api/calendar/earnings", async (req, res) => {
     try {
-      const startDate = new Date(req.query.start as string || new Date());
-      const endDate = new Date(req.query.end as string || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      const startDate = new Date((req.query.start as string) || new Date());
+      const endDate = new Date(
+        (req.query.end as string) ||
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      );
 
-      const { CalendarIntegrationService } = await import('./calendarIntegration');
-      const earnings = await CalendarIntegrationService.getEarningsCalendar(startDate, endDate);
+      const { CalendarIntegrationService } = await import(
+        "./calendarIntegration"
+      );
+      const earnings = await CalendarIntegrationService.getEarningsCalendar(
+        startDate,
+        endDate,
+      );
       res.json(earnings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch earnings calendar" });
@@ -613,11 +751,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/calendar/economic", async (req, res) => {
     try {
-      const startDate = new Date(req.query.start as string || new Date());
-      const endDate = new Date(req.query.end as string || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      const startDate = new Date((req.query.start as string) || new Date());
+      const endDate = new Date(
+        (req.query.end as string) ||
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      );
 
-      const { CalendarIntegrationService } = await import('./calendarIntegration');
-      const events = await CalendarIntegrationService.getEconomicEvents(startDate, endDate);
+      const { CalendarIntegrationService } = await import(
+        "./calendarIntegration"
+      );
+      const events = await CalendarIntegrationService.getEconomicEvents(
+        startDate,
+        endDate,
+      );
       res.json(events);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch economic events" });
@@ -626,11 +772,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/calendar/dividends", async (req, res) => {
     try {
-      const startDate = new Date(req.query.start as string || new Date());
-      const endDate = new Date(req.query.end as string || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      const startDate = new Date((req.query.start as string) || new Date());
+      const endDate = new Date(
+        (req.query.end as string) ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      );
 
-      const { CalendarIntegrationService } = await import('./calendarIntegration');
-      const dividends = await CalendarIntegrationService.getDividendCalendar(startDate, endDate);
+      const { CalendarIntegrationService } = await import(
+        "./calendarIntegration"
+      );
+      const dividends = await CalendarIntegrationService.getDividendCalendar(
+        startDate,
+        endDate,
+      );
       res.json(dividends);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch dividend calendar" });
@@ -642,8 +796,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const days = parseInt(req.query.days as string) || 7;
 
-      const { CalendarIntegrationService } = await import('./calendarIntegration');
-      const events = await CalendarIntegrationService.getUpcomingEvents(userId, days);
+      const { CalendarIntegrationService } = await import(
+        "./calendarIntegration"
+      );
+      const events = await CalendarIntegrationService.getUpcomingEvents(
+        userId,
+        days,
+      );
       res.json(events);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch upcoming events" });
@@ -655,7 +814,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const preferences = req.body;
 
-      const { CalendarIntegrationService } = await import('./calendarIntegration');
+      const { CalendarIntegrationService } = await import(
+        "./calendarIntegration"
+      );
       await CalendarIntegrationService.setupCalendarAlerts(userId, preferences);
       res.json({ success: true });
     } catch (error) {
@@ -669,46 +830,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.claims?.sub;
       const config = req.body;
 
-      const { ReportingService } = await import('./reportingService');
-      const reportConfig = await ReportingService.createReportConfig(userId, config);
+      const { ReportingService } = await import("./reportingService");
+      const reportConfig = await ReportingService.createReportConfig(
+        userId,
+        config,
+      );
       res.json(reportConfig);
     } catch (error) {
       res.status(500).json({ error: "Failed to create report configuration" });
     }
   });
 
-  app.get("/api/reports/generate/:reportId", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { reportId } = req.params;
+  app.get(
+    "/api/reports/generate/:reportId",
+    isAuthenticated,
+    async (req: any, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        const { reportId } = req.params;
 
-      const { ReportingService } = await import('./reportingService');
-      const report = await ReportingService.generateReport(userId, reportId);
+        const { ReportingService } = await import("./reportingService");
+        const report = await ReportingService.generateReport(userId, reportId);
 
-      if (report.buffer) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="report_${reportId}.pdf"`);
-        res.send(report.buffer);
-      } else if (report.html) {
-        res.setHeader('Content-Type', 'text/html');
-        res.send(report.html);
-      } else if (report.csv) {
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="report_${reportId}.csv"`);
-        res.send(report.csv);
-      } else {
-        res.json(report.data);
+        if (report.buffer) {
+          res.setHeader("Content-Type", "application/pdf");
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="report_${reportId}.pdf"`,
+          );
+          res.send(report.buffer);
+        } else if (report.html) {
+          res.setHeader("Content-Type", "text/html");
+          res.send(report.html);
+        } else if (report.csv) {
+          res.setHeader("Content-Type", "text/csv");
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="report_${reportId}.csv"`,
+          );
+          res.send(report.csv);
+        } else {
+          res.json(report.data);
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Failed to generate report" });
       }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to generate report" });
-    }
-  });
+    },
+  );
 
   app.get("/api/reports/weekly", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { ReportingService } = await import('./reportingService');
-      const report = await ReportingService.generateWeeklyPerformanceReport(userId);
+      const { ReportingService } = await import("./reportingService");
+      const report =
+        await ReportingService.generateWeeklyPerformanceReport(userId);
       res.json(report);
     } catch (error) {
       res.status(500).json({ error: "Failed to generate weekly report" });
@@ -718,8 +893,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reports/monthly", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { ReportingService } = await import('./reportingService');
-      const report = await ReportingService.generateMonthlyPerformanceReport(userId);
+      const { ReportingService } = await import("./reportingService");
+      const report =
+        await ReportingService.generateMonthlyPerformanceReport(userId);
       res.json(report);
     } catch (error) {
       res.status(500).json({ error: "Failed to generate monthly report" });
@@ -729,16 +905,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reports/digest", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { ReportingService } = await import('./reportingService');
+      const { ReportingService } = await import("./reportingService");
       const digest = await ReportingService.generateEmailDigest(userId);
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader("Content-Type", "text/html");
       res.send(digest);
     } catch (error) {
       res.status(500).json({ error: "Failed to generate email digest" });
     }
   });
-
-
 
   const httpServer = createServer(app);
   return httpServer;

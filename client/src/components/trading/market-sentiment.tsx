@@ -6,30 +6,30 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function MarketSentiment() {
   const { data: sentiment, isLoading } = useQuery({
-    queryKey: ['/api/sentiment'],
+    queryKey: ["/api/sentiment"],
     queryFn: tradingApi.getMarketSentiment,
   });
 
   const getSentimentColor = (overall: string) => {
     switch (overall) {
-      case 'BULLISH':
-        return 'text-trading-green';
-      case 'BEARISH':
-        return 'text-trading-red';
-      case 'NEUTRAL':
-        return 'text-trading-neutral';
+      case "BULLISH":
+        return "text-trading-green";
+      case "BEARISH":
+        return "text-trading-red";
+      case "NEUTRAL":
+        return "text-trading-neutral";
       default:
-        return 'text-trading-neutral';
+        return "text-trading-neutral";
     }
   };
 
   const getSentimentIcon = (overall: string) => {
     switch (overall) {
-      case 'BULLISH':
+      case "BULLISH":
         return <TrendingUp className="w-4 h-4" />;
-      case 'BEARISH':
+      case "BEARISH":
         return <TrendingDown className="w-4 h-4" />;
-      case 'NEUTRAL':
+      case "NEUTRAL":
         return <Minus className="w-4 h-4" />;
       default:
         return <Minus className="w-4 h-4" />;
@@ -40,7 +40,9 @@ export function MarketSentiment() {
     return (
       <Card className="trading-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Market Sentiment</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Market Sentiment
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -67,7 +69,9 @@ export function MarketSentiment() {
     return (
       <Card className="trading-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Market Sentiment</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Market Sentiment
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-trading-neutral">
@@ -81,20 +85,26 @@ export function MarketSentiment() {
   return (
     <Card className="trading-card">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Market Sentiment</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          Market Sentiment
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-trading-neutral">Overall Sentiment</span>
-            <span className={`font-medium flex items-center gap-1 ${getSentimentColor(sentiment.overall)}`}>
+            <span className="text-sm text-trading-neutral">
+              Overall Sentiment
+            </span>
+            <span
+              className={`font-medium flex items-center gap-1 ${getSentimentColor(sentiment.overall)}`}
+            >
               {getSentimentIcon(sentiment.overall)}
               {sentiment.overall}
             </span>
           </div>
           <div className="w-full bg-background rounded-full h-2">
-            <div 
-              className="bg-trading-green h-2 rounded-full transition-all duration-300" 
+            <div
+              className="bg-trading-green h-2 rounded-full transition-all duration-300"
               style={{ width: `${sentiment.bullishPercent}%` }}
             />
           </div>
@@ -123,15 +133,21 @@ export function MarketSentiment() {
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-trading-green rounded-full" />
-                <span className="text-sm text-trading-neutral">Fed rate decision positive</span>
+                <span className="text-sm text-trading-neutral">
+                  Fed rate decision positive
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-trading-warning rounded-full" />
-                <span className="text-sm text-trading-neutral">Inflation data mixed</span>
+                <span className="text-sm text-trading-neutral">
+                  Inflation data mixed
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-trading-green rounded-full" />
-                <span className="text-sm text-trading-neutral">Tech earnings strong</span>
+                <span className="text-sm text-trading-neutral">
+                  Tech earnings strong
+                </span>
               </div>
             </div>
           </div>

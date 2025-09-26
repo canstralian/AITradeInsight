@@ -6,38 +6,42 @@ import { RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function StockRecommendations() {
-  const { data: recommendations, isLoading, refetch } = useQuery({
-    queryKey: ['/api/recommendations'],
+  const {
+    data: recommendations,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["/api/recommendations"],
     queryFn: tradingApi.getRecommendations,
   });
 
   const getSignalColor = (signal: string) => {
     switch (signal) {
-      case 'BUY':
-        return 'bg-trading-green text-trading-green';
-      case 'SELL':
-        return 'bg-trading-red text-trading-red';
-      case 'HOLD':
-        return 'bg-trading-warning text-trading-warning';
-      case 'WATCH':
-        return 'bg-trading-blue text-trading-blue';
+      case "BUY":
+        return "bg-trading-green text-trading-green";
+      case "SELL":
+        return "bg-trading-red text-trading-red";
+      case "HOLD":
+        return "bg-trading-warning text-trading-warning";
+      case "WATCH":
+        return "bg-trading-blue text-trading-blue";
       default:
-        return 'bg-trading-neutral text-trading-neutral';
+        return "bg-trading-neutral text-trading-neutral";
     }
   };
 
   const getSignalDotColor = (signal: string) => {
     switch (signal) {
-      case 'BUY':
-        return 'bg-trading-green';
-      case 'SELL':
-        return 'bg-trading-red';
-      case 'HOLD':
-        return 'bg-trading-warning';
-      case 'WATCH':
-        return 'bg-trading-blue';
+      case "BUY":
+        return "bg-trading-green";
+      case "SELL":
+        return "bg-trading-red";
+      case "HOLD":
+        return "bg-trading-warning";
+      case "WATCH":
+        return "bg-trading-blue";
       default:
-        return 'bg-trading-neutral';
+        return "bg-trading-neutral";
     }
   };
 
@@ -45,7 +49,9 @@ export function StockRecommendations() {
     return (
       <Card className="trading-card">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">AI Stock Recommendations</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            AI Stock Recommendations
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -71,7 +77,9 @@ export function StockRecommendations() {
     <Card className="trading-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold">AI Stock Recommendations</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            AI Stock Recommendations
+          </CardTitle>
           <Button
             variant="outline"
             size="sm"
@@ -86,7 +94,9 @@ export function StockRecommendations() {
         {recommendations && recommendations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {recommendations.map((recommendation) => {
-              const isPositive = recommendation.stock && parseFloat(recommendation.stock.change) >= 0;
+              const isPositive =
+                recommendation.stock &&
+                parseFloat(recommendation.stock.change) >= 0;
               return (
                 <div
                   key={recommendation.id}
@@ -97,23 +107,36 @@ export function StockRecommendations() {
                       {recommendation.stock?.symbol}
                     </span>
                     <div className="flex items-center space-x-1">
-                      <div className={`w-2 h-2 rounded-full ${getSignalDotColor(recommendation.signal)}`} />
-                      <span className={`text-xs ${getSignalColor(recommendation.signal).split(' ')[1]}`}>
+                      <div
+                        className={`w-2 h-2 rounded-full ${getSignalDotColor(recommendation.signal)}`}
+                      />
+                      <span
+                        className={`text-xs ${getSignalColor(recommendation.signal).split(" ")[1]}`}
+                      >
                         {recommendation.signal}
                       </span>
                     </div>
                   </div>
-                  <div className="text-sm mb-2 truncate" title={recommendation.stock?.name}>
+                  <div
+                    className="text-sm mb-2 truncate"
+                    title={recommendation.stock?.name}
+                  >
                     {recommendation.stock?.name}
                   </div>
                   <div className="text-xs text-trading-neutral mb-2">
-                    AI Score: <span className="text-primary">{recommendation.aiScore}/100</span>
+                    AI Score:{" "}
+                    <span className="text-primary">
+                      {recommendation.aiScore}/100
+                    </span>
                   </div>
                   <div className="text-sm font-mono">
                     ${recommendation.stock?.price}
                   </div>
-                  <div className={`text-xs ${isPositive ? 'text-trading-green' : 'text-trading-red'}`}>
-                    {isPositive ? '+' : ''}{recommendation.stock?.changePercent}%
+                  <div
+                    className={`text-xs ${isPositive ? "text-trading-green" : "text-trading-red"}`}
+                  >
+                    {isPositive ? "+" : ""}
+                    {recommendation.stock?.changePercent}%
                   </div>
                 </div>
               );

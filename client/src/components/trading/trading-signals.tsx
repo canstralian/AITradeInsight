@@ -6,37 +6,37 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function TradingSignals() {
   const { data: signals, isLoading } = useQuery({
-    queryKey: ['/api/signals'],
+    queryKey: ["/api/signals"],
     queryFn: tradingApi.getTradingSignals,
   });
 
   const getSignalColor = (signalType: string) => {
     switch (signalType) {
-      case 'BUY':
-        return 'trading-signal-buy';
-      case 'SELL':
-        return 'trading-signal-sell';
-      case 'HOLD':
-        return 'trading-signal-hold';
-      case 'WATCH':
-        return 'trading-signal-watch';
+      case "BUY":
+        return "trading-signal-buy";
+      case "SELL":
+        return "trading-signal-sell";
+      case "HOLD":
+        return "trading-signal-hold";
+      case "WATCH":
+        return "trading-signal-watch";
       default:
-        return 'trading-signal-hold';
+        return "trading-signal-hold";
     }
   };
 
   const getSignalDotColor = (signalType: string) => {
     switch (signalType) {
-      case 'BUY':
-        return 'bg-trading-green';
-      case 'SELL':
-        return 'bg-trading-red';
-      case 'HOLD':
-        return 'bg-trading-warning';
-      case 'WATCH':
-        return 'bg-trading-blue';
+      case "BUY":
+        return "bg-trading-green";
+      case "SELL":
+        return "bg-trading-red";
+      case "HOLD":
+        return "bg-trading-warning";
+      case "WATCH":
+        return "bg-trading-blue";
       default:
-        return 'bg-trading-warning';
+        return "bg-trading-warning";
     }
   };
 
@@ -71,9 +71,14 @@ export function TradingSignals() {
       <CardContent>
         <div className="space-y-3">
           {signals?.map((signal: any) => (
-            <div key={signal.id} className="flex items-center justify-between p-3 rounded-lg border">
+            <div
+              key={signal.id}
+              className="flex items-center justify-between p-3 rounded-lg border"
+            >
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${getSignalDotColor(signal.signalType)}`} />
+                <div
+                  className={`w-3 h-3 rounded-full ${getSignalDotColor(signal.signalType)}`}
+                />
                 <div>
                   <p className="font-medium">{signal.stock?.symbol}</p>
                   <p className="text-sm text-gray-600">{signal.signalType}</p>
@@ -81,7 +86,9 @@ export function TradingSignals() {
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium">{signal.confidence}%</p>
-                <p className="text-xs text-gray-500">{new Date(signal.generatedAt).toLocaleDateString()}</p>
+                <p className="text-xs text-gray-500">
+                  {new Date(signal.generatedAt).toLocaleDateString()}
+                </p>
               </div>
             </div>
           ))}

@@ -1,82 +1,81 @@
-
 name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run ESLint
-      run: npm run lint
+      - name: Run ESLint
+        run: npm run lint
 
-    - name: Run TypeScript check
-      run: npm run type-check
+      - name: Run TypeScript check
+        run: npm run type-check
 
-    - name: Run tests
-      run: npm run test:coverage
+      - name: Run tests
+        run: npm run test:coverage
 
-    - name: Upload coverage to Codecov
-      if: matrix.node-version == '20.x'
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/lcov.info
-        fail_ci_if_error: true
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: true
 
-    - name: Security audit
-      run: npm audit --audit-level moderate
+      - name: Security audit
+        run: npm audit --audit-level moderate
 
   build:
     runs-on: ubuntu-latest
     needs: lint-and-test
-    
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.x
-        cache: 'npm'
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Build application
-      run: npm run build
+      - name: Build application
+        run: npm run build
 
-    - name: Test build
-      run: npm run preview
+      - name: Test build
+        run: npm run preview
 
   deploy:
     runs-on: ubuntu-latest
     needs: [lint-and-test, build]
     if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
 
-    - name: Deploy to Replit
-      run: |
-        echo "Deployment to Replit would happen here"
-        # Add Replit deployment steps when available
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Replit
+        run: |
+          echo "Deployment to Replit would happen here"
+          # Add Replit deployment steps when available

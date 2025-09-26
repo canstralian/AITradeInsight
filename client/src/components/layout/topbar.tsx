@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Bell, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,11 @@ export default function TopBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const isMobile = useIsMobile();
-  
+
   const { data: searchResults } = useQuery({
-    queryKey: ['/api/stocks/search', searchQuery],
-    queryFn: () => searchQuery ? tradingApi.searchStocks(searchQuery) : Promise.resolve([]),
+    queryKey: ["/api/stocks/search", searchQuery],
+    queryFn: () =>
+      searchQuery ? tradingApi.searchStocks(searchQuery) : Promise.resolve([]),
     enabled: searchQuery.length > 0,
   });
 
@@ -29,11 +29,15 @@ export default function TopBar() {
             <div className="lg:hidden">
               <MobileMenuTrigger />
             </div>
-            
+
             {/* Search */}
-            <div className={`relative flex-1 max-w-md transition-all duration-200 ${
-              isMobile && isSearchExpanded ? 'fixed inset-x-3 top-3 z-50 bg-background border border-border rounded-lg p-2' : ''
-            }`}>
+            <div
+              className={`relative flex-1 max-w-md transition-all duration-200 ${
+                isMobile && isSearchExpanded
+                  ? "fixed inset-x-3 top-3 z-50 bg-background border border-border rounded-lg p-2"
+                  : ""
+              }`}
+            >
               {isMobile && isSearchExpanded && (
                 <Button
                   variant="ghost"
@@ -47,9 +51,9 @@ export default function TopBar() {
                   <X className="w-4 h-4" />
                 </Button>
               )}
-              
+
               <div className="relative">
-                <Search 
+                <Search
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-trading-neutral w-4 h-4 cursor-pointer"
                   onClick={() => isMobile && setIsSearchExpanded(true)}
                 />
@@ -62,10 +66,10 @@ export default function TopBar() {
                   className={`
                     pl-10 pr-4 py-2 bg-background border-border focus:border-primary
                     transition-all duration-200 touch-manipulation
-                    ${isMobile && !isSearchExpanded ? 'w-8 opacity-0 pointer-events-none' : ''}
+                    ${isMobile && !isSearchExpanded ? "w-8 opacity-0 pointer-events-none" : ""}
                   `}
                 />
-                
+
                 {/* Search results dropdown */}
                 {searchResults && searchResults.length > 0 && searchQuery && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
@@ -79,60 +83,68 @@ export default function TopBar() {
                         }}
                       >
                         <div className="min-w-0 flex-1">
-                          <span className="font-mono font-bold text-primary">{stock.symbol}</span>
-                          <span className="ml-2 text-sm text-trading-neutral truncate">{stock.name}</span>
+                          <span className="font-mono font-bold text-primary">
+                            {stock.symbol}
+                          </span>
+                          <span className="ml-2 text-sm text-trading-neutral truncate">
+                            {stock.name}
+                          </span>
                         </div>
-                        <span className="font-mono text-sm ml-2">${stock.price}</span>
+                        <span className="font-mono text-sm ml-2">
+                          ${stock.price}
+                        </span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             </div>
-            
+
             {/* Market status - hidden on mobile when search is expanded */}
             {!(isMobile && isSearchExpanded) && (
               <div className="hidden sm:flex items-center space-x-2 text-sm">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-trading-green rounded-full"></div>
-                  <span className="text-trading-neutral whitespace-nowrap">Market Open</span>
+                  <span className="text-trading-neutral whitespace-nowrap">
+                    Market Open
+                  </span>
                 </div>
                 <span className="text-trading-neutral">|</span>
                 <span className="text-trading-neutral font-mono">
-                  {new Date().toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    timeZoneName: 'short'
+                  {new Date().toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZoneName: "short",
                   })}
                 </span>
               </div>
             )}
           </div>
-          
+
           {/* Right section - hidden when search is expanded on mobile */}
           {!(isMobile && isSearchExpanded) && (
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Alerts button */}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 className="border-accent text-accent hover:bg-accent hover:text-accent-foreground touch-manipulation min-h-[40px] hidden sm:flex"
               >
                 <Bell className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Alerts</span>
               </Button>
-              
+
               {/* Mobile alerts button */}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 className="border-accent text-accent hover:bg-accent hover:text-accent-foreground touch-manipulation min-h-[44px] sm:hidden"
               >
                 <Bell className="w-4 h-4" />
               </Button>
-              
+
               {/* New Trade button */}
-              <Button 
+              <Button
                 size="sm"
                 className="bg-primary text-primary-foreground hover:bg-primary/80 touch-manipulation min-h-[44px] sm:min-h-[40px]"
               >

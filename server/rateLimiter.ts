@@ -1,6 +1,5 @@
-
-import rateLimit from 'express-rate-limit';
-import { Request, Response } from 'express';
+import rateLimit from "express-rate-limit";
+import { Request, Response } from "express";
 
 // Enhanced rate limiter with different rules for different endpoints
 export const createRateLimiter = (config: {
@@ -13,7 +12,7 @@ export const createRateLimiter = (config: {
     windowMs: config.windowMs,
     max: config.max,
     message: {
-      error: config.message || 'Too many requests, please try again later.',
+      error: config.message || "Too many requests, please try again later.",
       retryAfter: Math.ceil(config.windowMs / 1000),
     },
     skipSuccessfulRequests: config.skipSuccessfulRequests || false,
@@ -33,14 +32,14 @@ export const rateLimiters = {
   general: createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,
-    message: 'Too many API requests, please try again later.',
+    message: "Too many API requests, please try again later.",
   }),
 
   // Strict rate limit for authentication endpoints
   auth: createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5,
-    message: 'Too many authentication attempts, please try again later.',
+    message: "Too many authentication attempts, please try again later.",
     skipSuccessfulRequests: true,
   }),
 
@@ -48,20 +47,21 @@ export const rateLimiters = {
   trading: createRateLimiter({
     windowMs: 60 * 1000, // 1 minute
     max: 10,
-    message: 'Too many trading requests, please slow down.',
+    message: "Too many trading requests, please slow down.",
   }),
 
   // Watchlist operations
   watchlist: createRateLimiter({
     windowMs: 60 * 1000, // 1 minute
     max: 20,
-    message: 'Too many watchlist operations, please try again later.',
+    message: "Too many watchlist operations, please try again later.",
   }),
 
   // AI analysis requests (more expensive)
   aiAnalysis: createRateLimiter({
     windowMs: 60 * 1000, // 1 minute
     max: 5,
-    message: 'Too many AI analysis requests, please wait before requesting more.',
+    message:
+      "Too many AI analysis requests, please wait before requesting more.",
   }),
 };

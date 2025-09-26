@@ -1,13 +1,12 @@
-
-import { z } from 'zod';
-import { storage } from './storage';
+import { z } from "zod";
+import { storage } from "./storage";
 
 export interface BrokerAccount {
   id: string;
   brokerId: string;
   accountId: string;
   accountName: string;
-  accountType: 'CASH' | 'MARGIN' | 'IRA';
+  accountType: "CASH" | "MARGIN" | "IRA";
   isActive: boolean;
   lastSync: Date;
   balance: number;
@@ -33,11 +32,11 @@ export interface BrokerPosition {
 export interface BrokerTrade {
   id: string;
   symbol: string;
-  side: 'BUY' | 'SELL';
+  side: "BUY" | "SELL";
   quantity: number;
   price: number;
-  orderType: 'MARKET' | 'LIMIT' | 'STOP' | 'STOP_LIMIT';
-  status: 'PENDING' | 'FILLED' | 'CANCELLED' | 'REJECTED';
+  orderType: "MARKET" | "LIMIT" | "STOP" | "STOP_LIMIT";
+  status: "PENDING" | "FILLED" | "CANCELLED" | "REJECTED";
   timestamp: Date;
 }
 
@@ -48,22 +47,28 @@ export class BrokerIntegrationService {
     this.brokerAdapters.set(brokerId, adapter);
   }
 
-  static async connectBrokerAccount(userId: string, brokerConfig: {
-    brokerId: string;
-    apiKey: string;
-    apiSecret: string;
-    accountId: string;
-    accountName: string;
-  }): Promise<BrokerAccount> {
+  static async connectBrokerAccount(
+    userId: string,
+    brokerConfig: {
+      brokerId: string;
+      apiKey: string;
+      apiSecret: string;
+      accountId: string;
+      accountName: string;
+    },
+  ): Promise<BrokerAccount> {
     const adapter = this.brokerAdapters.get(brokerConfig.brokerId);
     if (!adapter) {
       throw new Error(`Broker ${brokerConfig.brokerId} not supported`);
     }
 
     // Validate credentials
-    const isValid = await adapter.validateCredentials(brokerConfig.apiKey, brokerConfig.apiSecret);
+    const isValid = await adapter.validateCredentials(
+      brokerConfig.apiKey,
+      brokerConfig.apiSecret,
+    );
     if (!isValid) {
-      throw new Error('Invalid broker credentials');
+      throw new Error("Invalid broker credentials");
     }
 
     const account: BrokerAccount = {
@@ -71,7 +76,7 @@ export class BrokerIntegrationService {
       brokerId: brokerConfig.brokerId,
       accountId: brokerConfig.accountId,
       accountName: brokerConfig.accountName,
-      accountType: 'CASH',
+      accountType: "CASH",
       isActive: true,
       lastSync: new Date(),
       balance: 0,
@@ -79,21 +84,24 @@ export class BrokerIntegrationService {
       credentials: {
         apiKey: brokerConfig.apiKey,
         apiSecret: brokerConfig.apiSecret,
-      }
+      },
     };
 
     // Store encrypted credentials
     await storage.saveBrokerAccount(userId, account);
-    
+
     // Initial sync
     await this.syncBrokerAccount(userId, account.id);
-    
+
     return account;
   }
 
-  static async syncBrokerAccount(userId: string, accountId: string): Promise<void> {
+  static async syncBrokerAccount(
+    userId: string,
+    accountId: string,
+  ): Promise<void> {
     const account = await storage.getBrokerAccount(userId, accountId);
-    if (!account) throw new Error('Broker account not found');
+    if (!account) throw new Error("Broker account not found");
 
     const adapter = this.brokerAdapters.get(account.brokerId);
     if (!adapter) throw new Error(`Broker ${account.brokerId} not supported`);
@@ -120,22 +128,26 @@ export class BrokerIntegrationService {
     }
   }
 
-  static async executeTradeOrder(userId: string, accountId: string, order: {
-    symbol: string;
-    side: 'BUY' | 'SELL';
-    quantity: number;
-    orderType: 'MARKET' | 'LIMIT';
-    price?: number;
-  }): Promise<BrokerTrade> {
+  static async executeTradeOrder(
+    userId: string,
+    accountId: string,
+    order: {
+      symbol: string;
+      side: "BUY" | "SELL";
+      quantity: number;
+      orderType: "MARKET" | "LIMIT";
+      price?: number;
+    },
+  ): Promise<BrokerTrade> {
     const account = await storage.getBrokerAccount(userId, accountId);
-    if (!account) throw new Error('Broker account not found');
+    if (!account) throw new Error("Broker account not found");
 
     const adapter = this.brokerAdapters.get(account.brokerId);
     if (!adapter) throw new Error(`Broker ${account.brokerId} not supported`);
 
     const trade = await adapter.executeOrder(account.credentials, order);
     await storage.saveBrokerTrade(userId, accountId, trade);
-    
+
     return trade;
   }
 
@@ -159,9 +171,9 @@ export class BrokerIntegrationService {
 
     // Aggregate positions by symbol
     const consolidatedPositions = this.consolidatePositions(allPositions);
-    
+
     // Calculate total P&L
-    consolidatedPositions.forEach(pos => {
+    consolidatedPositions.forEach((pos) => {
       totalPL += pos.unrealizedPL;
     });
 
@@ -170,36 +182,43 @@ export class BrokerIntegrationService {
       totalPL,
       totalPLPercent: totalValue > 0 ? (totalPL / totalValue) * 100 : 0,
       positions: consolidatedPositions,
-      accounts
+      accounts,
     };
   }
 
-  private static consolidatePositions(positions: BrokerPosition[]): BrokerPosition[] {
+  private static consolidatePositions(
+    positions: BrokerPosition[],
+  ): BrokerPosition[] {
     const consolidated = new Map<string, BrokerPosition>();
-    
-    positions.forEach(pos => {
+
+    positions.forEach((pos) => {
       if (consolidated.has(pos.symbol)) {
         const existing = consolidated.get(pos.symbol)!;
         const totalQuantity = existing.quantity + pos.quantity;
-        const totalCost = (existing.avgPrice * existing.quantity) + (pos.avgPrice * pos.quantity);
-        
+        const totalCost =
+          existing.avgPrice * existing.quantity + pos.avgPrice * pos.quantity;
+
         existing.quantity = totalQuantity;
         existing.avgPrice = totalCost / totalQuantity;
         existing.marketValue += pos.marketValue;
         existing.unrealizedPL += pos.unrealizedPL;
-        existing.unrealizedPLPercent = (existing.unrealizedPL / (existing.avgPrice * existing.quantity)) * 100;
+        existing.unrealizedPLPercent =
+          (existing.unrealizedPL / (existing.avgPrice * existing.quantity)) *
+          100;
       } else {
         consolidated.set(pos.symbol, { ...pos });
       }
     });
-    
+
     return Array.from(consolidated.values());
   }
 }
 
 export interface BrokerAdapter {
   validateCredentials(apiKey: string, apiSecret: string): Promise<boolean>;
-  getAccountInfo(credentials: any): Promise<{ balance: number; buyingPower: number }>;
+  getAccountInfo(
+    credentials: any,
+  ): Promise<{ balance: number; buyingPower: number }>;
   getPositions(credentials: any): Promise<BrokerPosition[]>;
   getRecentTrades(credentials: any): Promise<BrokerTrade[]>;
   executeOrder(credentials: any, order: any): Promise<BrokerTrade>;
@@ -207,12 +226,17 @@ export interface BrokerAdapter {
 
 // Example broker adapter implementation
 export class AlpacaBrokerAdapter implements BrokerAdapter {
-  async validateCredentials(apiKey: string, apiSecret: string): Promise<boolean> {
+  async validateCredentials(
+    apiKey: string,
+    apiSecret: string,
+  ): Promise<boolean> {
     // Implement Alpaca API validation
     return true;
   }
 
-  async getAccountInfo(credentials: any): Promise<{ balance: number; buyingPower: number }> {
+  async getAccountInfo(
+    credentials: any,
+  ): Promise<{ balance: number; buyingPower: number }> {
     // Implement Alpaca account info retrieval
     return { balance: 10000, buyingPower: 8000 };
   }
@@ -236,11 +260,11 @@ export class AlpacaBrokerAdapter implements BrokerAdapter {
       quantity: order.quantity,
       price: order.price || 0,
       orderType: order.orderType,
-      status: 'PENDING',
-      timestamp: new Date()
+      status: "PENDING",
+      timestamp: new Date(),
     };
   }
 }
 
 // Register broker adapters
-BrokerIntegrationService.registerBroker('alpaca', new AlpacaBrokerAdapter());
+BrokerIntegrationService.registerBroker("alpaca", new AlpacaBrokerAdapter());
