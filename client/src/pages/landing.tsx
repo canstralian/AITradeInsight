@@ -152,6 +152,12 @@ export function Landing() {
               <a href="#pricing" className="hover:text-purple-400 transition">
                 Pricing
               </a>
+              <a 
+                href="/development-phases" 
+                className="hover:text-purple-400 transition"
+              >
+                Development Phases
+              </a>
               <a href="#contact" className="hover:text-purple-400 transition">
                 Contact
               </a>

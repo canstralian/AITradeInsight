@@ -7,6 +7,7 @@ import { Dashboard } from "@/pages/dashboard";
 import { CryptoDashboard } from "@/pages/crypto-dashboard";
 import { Home } from "@/pages/home";
 import { GetStarted } from "@/pages/get-started";
+import { DevelopmentPhasesPage } from "@/pages/development-phases";
 import { NotFound } from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -53,6 +54,13 @@ function App() {
               {() => (
                 <ErrorBoundary>
                   <CryptoDashboard />
+                </ErrorBoundary>
+              )}
+            </Route>
+            <Route path="/development-phases">
+              {() => (
+                <ErrorBoundary>
+                  <DevelopmentPhasesPage />
                 </ErrorBoundary>
               )}
             </Route>
