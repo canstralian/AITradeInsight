@@ -632,7 +632,7 @@ export function ProjectWizard({ onProjectCreated }: { onProjectCreated?: (projec
               <div className="space-y-4">
                 <Label>Current Technologies</Label>
                 <Textarea
-                  value={projectData.modernizationOptions?.currentTechnologies.join(', ') || ''}
+                  value={projectData.modernizationOptions?.currentTechnologies?.join(', ') ?? ''}
                   onChange={(e) => setProjectData(prev => ({
                     ...prev,
                     modernizationOptions: {
