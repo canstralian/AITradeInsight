@@ -15,7 +15,7 @@
     "@coingecko/coingecko-typescript": "^1.11.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
-    "@modelcontextprotocol/sdk": "^1.15.1",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "@neondatabase/serverless": "^0.10.4",
     "@radix-ui/react-accordion": "^1.2.4",
     "@radix-ui/react-alert-dialog": "^1.1.7",
@@ -105,12 +105,12 @@
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.4",
-    "esbuild": "^0.25.7",
+    "esbuild": "^0.25.8",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
     "typescript": "5.6.3",
-    "vite": "^7.0.7"
+    "vite": "^7.0.8"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
