@@ -251,7 +251,6 @@ export class DevelopmentPhasesService {
     let selectedStack = 'react-node-postgres';
 
     // Apply enterprise constraints
-    const cloudConstraint = constraints.find(c => c.type === 'cloud-provider');
     const techConstraint = constraints.find(c => c.type === 'tech-stack');
 
     if (techConstraint) {
