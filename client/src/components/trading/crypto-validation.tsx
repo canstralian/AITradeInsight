@@ -82,20 +82,6 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
           <p className="text-sm text-muted-foreground">{validation.technicalAnalysis}</p>
         </div>
 
-        {/* AI Recommendation */}
-        <div className="border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Brain className="h-4 w-4 text-purple-500" />
-            <h3 className="font-semibold">AI Recommendation</h3>
-            <Badge variant="outline">{validation.overallScore}/100</Badge>
-          </div>
-          <Progress value={validation.overallScore} className="mb-2" />
-          <p className="text-sm text-muted-foreground">{validation.recommendation}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
         {/* Whale Activity */}
         <div className="border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
