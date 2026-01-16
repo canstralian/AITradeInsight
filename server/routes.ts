@@ -10,6 +10,7 @@ import { MFAService } from "./mfaService";
 import { TradingLimitsService } from "./tradingLimits";
 import { AuditLogger, auditMiddleware } from "./auditLogger";
 import { algoliaMCP } from "./mcpService";
+import developmentPhasesRoutes from "./routes/developmentPhases";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -17,6 +18,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Apply audit middleware to all routes
   app.use("/api", auditMiddleware);
+
+  // Register development phases routes
+  app.use("/api/development-phases", developmentPhasesRoutes);
 
   // MFA routes
   app.post(
