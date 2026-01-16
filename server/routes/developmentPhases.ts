@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import { DevelopmentPhasesService } from '../developmentPhasesService';
 import { 
-  DevelopmentPhase, 
-  EnterpriseConstraint,
-  SpecificationRequirement 
+  DevelopmentPhase
 } from '../../shared/types/development-phases';
 
 const router = Router();
