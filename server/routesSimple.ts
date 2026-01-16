@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import express from "express";
 import developmentPhasesRoutes from "./routes/developmentPhases";
 
 export async function registerRoutesSimple(app: Express): Promise<Server> {
