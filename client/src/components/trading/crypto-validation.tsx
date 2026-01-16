@@ -9,9 +9,67 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Brain, TrendingUp, Users, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Represents the coin information within a crypto validation response
+ */
+interface CryptoCoinInfo {
+  id: number;
+  symbol: string;
+  name: string;
+  price: string;
+}
+
+/**
+ * Represents a comprehensive AI-powered validation result for a cryptocurrency
+ * This interface ensures type safety for the validation object that combines
+ * social sentiment analysis, technical indicators, whale activity monitoring,
+ * and overall AI recommendations to assess trading opportunities.
+ */
+interface CryptoValidation {
+  /** Basic coin information */
+  coin: CryptoCoinInfo;
+  
+  /** Social sentiment score (0-100) based on social media analysis */
+  socialScore: number;
+  
+  /** Technical analysis score (0-100) based on price action and indicators */
+  technicalScore: number;
+  
+  /** Whale activity score (0-100) tracking large wallet movements */
+  whaleActivity: number;
+  
+  /** Overall combined score (0-100) aggregating all analysis factors */
+  overallScore?: number;
+  
+  /** Detailed analysis of social media sentiment and trends */
+  socialAnalysis: string;
+  
+  /** Detailed technical analysis including support/resistance levels */
+  technicalAnalysis: string;
+  
+  /** Analysis of large holder activity and institutional interest */
+  whaleAnalysis: string;
+  
+  /** Trading signal recommendation (e.g., "BUY", "SELL", "HOLD") */
+  overallSignal: "BUY" | "SELL" | "HOLD" | "WATCH";
+  
+  /** AI confidence level (0-100) in the overall recommendation */
+  overallConfidence: number;
+  
+  /** Comprehensive AI-generated trading recommendation summary */
+  recommendation: string;
+}
+
+/**
+ * Props for the CryptoValidation component
+ */
 interface CryptoValidationProps {
   coinId: number;
-  onTradeSetup: (coinData: any) => void;
+  /**
+   * Callback function invoked when user initiates automated trade setup
+   * @param validation - The complete validation data with type-safe structure
+   */
+  onTradeSetup: (validation: CryptoValidation) => void;
 }
 
 export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps) {
@@ -82,20 +140,6 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
           <p className="text-sm text-muted-foreground">{validation.technicalAnalysis}</p>
         </div>
 
-        {/* AI Recommendation */}
-        <div className="border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Brain className="h-4 w-4 text-purple-500" />
-            <h3 className="font-semibold">AI Recommendation</h3>
-            <Badge variant="outline">{validation.overallScore}/100</Badge>
-          </div>
-          <Progress value={validation.overallScore} className="mb-2" />
-          <p className="text-sm text-muted-foreground">{validation.recommendation}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
         {/* Whale Activity */}
         <div className="border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -133,5 +177,8 @@ export function CryptoValidation({ coinId, onTradeSetup }: CryptoValidationProps
     </Card>
   );
 }
+
+// Export the type for use in other components
+export type { CryptoValidation, CryptoCoinInfo };
 
 export default CryptoValidation;
