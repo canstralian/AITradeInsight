@@ -1,5 +1,4 @@
 import express, { type Express } from "express";
-import { createServer, type Server } from "http";
 import { registerRoutesSimple } from "./routesSimple";
 import path from "path";
 
