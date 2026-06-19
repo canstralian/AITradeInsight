@@ -9,9 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Zap, Settings, TrendingUp, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CryptoValidation } from "./crypto-validation";
 
 interface AutomatedTradingProps {
-  coinData?: any;
+  /**
+   * Validated cryptocurrency data used for setting up automated trades
+   * Includes AI analysis, scores, and recommendations
+   */
+  coinData?: CryptoValidation;
 }
 
 export function AutomatedTrading({ coinData }: AutomatedTradingProps) {
